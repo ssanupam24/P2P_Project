@@ -77,7 +77,6 @@ public class Message
    */
   public void receiveMessage(InputStream input) throws IOException
   {
-    // insert code here
 	  try{
 		  byte[] receivedLength = new byte[4];
 		  byte[] receivedType = new byte[1];
