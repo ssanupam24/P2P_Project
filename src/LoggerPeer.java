@@ -36,7 +36,7 @@ public class LoggerPeer
 		
 	} 
 	
-	public final synchronized void writeToFile(String content)
+	public synchronized void writeToFile(String content)
 	{
 		try 
 		{
