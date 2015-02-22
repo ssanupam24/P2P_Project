@@ -1,4 +1,3 @@
-package src;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -155,7 +154,7 @@ public class PeerConfigs {
 			totalPieces = sizeOfFile/sizeOfPiece;
 			sizeOfLastPiece = sizeOfFile % sizeOfPiece;
 			
-			// printCommonSettings();
+			//printCommonSettings();
 		}
 		catch(IOException exception)
 		{
@@ -169,7 +168,7 @@ public class PeerConfigs {
 			int currByte = 0;
 			String currString = "";
 			int stringNum = 1;
-			totalPeers = getNumPeers(peerConfigPath);
+			totalPeers = 0;
 			
 			peerList = new ArrayList<Integer>(totalPeers);
 			hostList = new ArrayList<String>(totalPeers);
@@ -236,6 +235,7 @@ public class PeerConfigs {
 	            	   }
 	            	   else if(modResult == 0) // token indicates whether the peer has the whole file
 	            	   {
+	            		   ++totalPeers;
 	            		   if(tokenizer.nval == 0)
 	            			   hasWholeFile.add(false);
 	            		   else if(tokenizer.nval == 1)
@@ -252,14 +252,21 @@ public class PeerConfigs {
 	            		   System.exit(-1);
 	            	   }
 	                  break;
-	               default:    
+	               default:
+	            	   break;
 	            }
 	         } while (!eof);
 			
 			if(in != null)
 				in.close();
 			
-			// printPeerInfo(totalPeers);
+			if(totalPeers == 0)
+			{
+     		   System.out.println("Error:  No peer information in the configuration file.");    		   
+     		   System.exit(-1);	
+			}
+			// else
+				// printPeerInfo(totalPeers);
 		}
 		catch(IOException exception)
 		{
@@ -281,6 +288,8 @@ public class PeerConfigs {
 	{
 		int i = 0;
 		System.out.println("\nPeer List:");
+		System.out.printf("Total # peers: %d", totalPeers);
+		
 		int wholeFile = 0;
 		
 		while(i < totalPeers)
@@ -297,61 +306,8 @@ public class PeerConfigs {
 		}
 	}
 	
-	// calculates the number of total peers based on the total number
-	// of lines with non-whitespace tokens in the PeerInfo.cfg file
-	public int getNumPeers(String filePath) throws FileNotFoundException
-	{
-		int numLines = 0;
-		
-		try
-		{
-		in = new FileInputStream(filePath);
-		streamReader = new BufferedReader(new InputStreamReader(in));
-		tokenizer = new StreamTokenizer(streamReader);
-		tokenizer.eolIsSignificant(true);
-		
-		int token;
-		boolean tokenInCurrLine = false; // indicates if there is a non-newline or white space token in the current line
-		boolean eof = false;
-		
-        do {
-            token = tokenizer.nextToken();
-            
-            switch (token) {
-               case StreamTokenizer.TT_EOF:
-            	   eof = true;
-            	   break;
-               case StreamTokenizer.TT_EOL:
-                  if(tokenInCurrLine)
-                	  ++numLines;
-            
-                  tokenInCurrLine = false;
-                  break;
-               case StreamTokenizer.TT_WORD:
-            	  tokenInCurrLine = true;
-                  break;
-               case StreamTokenizer.TT_NUMBER:            	  
-            	   tokenInCurrLine = true;
-            	   break;               
-               default:
-                  }
-            }while (!eof);
-		
-		
-		if(in != null)
-			in.close();	
-		}
-		catch(IOException exception)
-		{
-			exception.printStackTrace();
-		}
-		
-		return numLines;
-	}
-	
 	public static void main(String [] args) throws FileNotFoundException
 	{	
-		System.out.println("Test of git uploading!");
-		PeerConfigs config = new PeerConfigs("Common.cfg", "PeerInfo.cfg");
+		PeerConfigs config = new PeerConfigs("Common.cfg", "PeerInfo2.cfg");
 	}
 }
