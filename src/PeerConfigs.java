@@ -351,6 +351,7 @@ public class PeerConfigs {
 	
 	public static void main(String [] args) throws FileNotFoundException
 	{	
+		System.out.println("Test of git uploading!");
 		PeerConfigs config = new PeerConfigs("Common.cfg", "PeerInfo.cfg");
 	}
 }
