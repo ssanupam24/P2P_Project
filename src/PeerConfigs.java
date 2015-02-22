@@ -212,7 +212,7 @@ public class PeerConfigs {
 	            	   }
 	            	   else
 	            	   {
-	            		   System.out.println("Error:  Host name in the wrong location.");
+	            		   System.out.println("Error:  The host name in the wrong location.");
 	            		   System.exit(-1);
 	            	   }   
 	                  break;
