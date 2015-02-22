@@ -265,8 +265,8 @@ public class PeerConfigs {
      		   System.out.println("Error:  No peer information in the configuration file.");    		   
      		   System.exit(-1);	
 			}
-			// else
-				// printPeerInfo(totalPeers);
+			else
+				printPeerInfo(totalPeers);
 		}
 		catch(IOException exception)
 		{
@@ -287,8 +287,9 @@ public class PeerConfigs {
 	public void printPeerInfo(int totalPeers)
 	{
 		int i = 0;
+		
+		System.out.printf("\nTotal # peers: %d\n", totalPeers);
 		System.out.println("\nPeer List:");
-		System.out.printf("Total # peers: %d", totalPeers);
 		
 		int wholeFile = 0;
 		
