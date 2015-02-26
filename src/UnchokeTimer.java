@@ -2,7 +2,7 @@
 import java.util.Timer;
 
 /**
- * The UnchokeTimer class will used to start a timer to keep
+ * The UnchokeTimer class starts a timer to keep
  * track of the chosen unchoked peers every k seconds.
  * 
  * @author Abhishek
