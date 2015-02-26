@@ -5,6 +5,10 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 
+/*
+ * @author Abhishek
+ * 
+ */
 public class LoggerPeer 
 {
 	private Timestamp logTime; 
