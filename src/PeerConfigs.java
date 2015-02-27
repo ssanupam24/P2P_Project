@@ -1,3 +1,7 @@
+/*
+ *@author Gloria 
+ */
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -170,12 +174,12 @@ public class PeerConfigs {
 			int stringNum = 1;
 			totalPeers = 0;
 			
-			peerList = new ArrayList<Integer>(totalPeers);
-			hostList = new ArrayList<String>(totalPeers);
-			downloadPortList = new ArrayList<Integer>(totalPeers);
-			uploadPortList = new ArrayList<Integer>(totalPeers);
-			hasWholeFile = new ArrayList<Boolean>(totalPeers);
-			havePortList = new ArrayList<Integer>(totalPeers);
+			peerList = new ArrayList<Integer>();
+			hostList = new ArrayList<String>();
+			downloadPortList = new ArrayList<Integer>();
+			uploadPortList = new ArrayList<Integer>();
+			hasWholeFile = new ArrayList<Boolean>();
+			havePortList = new ArrayList<Integer>();
 			
 			in = new FileInputStream(peerConfigPath);
 			streamReader = new BufferedReader(new InputStreamReader(in));

@@ -1,6 +1,6 @@
-/*
+/*@author Anupam
  * This class is used to convert a byte array to int and vice versa
- * Found it on Stack Overflow 
+ * Found the logic on Stack Overflow 
  */
 public class ByteIntConversion {
 	//Converts byte array to int

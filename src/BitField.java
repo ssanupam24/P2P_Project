@@ -1,5 +1,6 @@
 /*
  * This class keeps track of the Pieces that are downloaded from the peers.
+ * @author Anupam
  */
 public class BitField {
 	private final int totPieces;
@@ -38,6 +39,7 @@ public class BitField {
 			byteIndex = i / 8;
 			if(bitPieceIndex[i] == true)
 				result[byteIndex] = (byte)((1 << bitIndex) | (result[byteIndex]));
+			//Test it with and without
 			else
 				result[byteIndex] = (byte) (~(1 << bitIndex) & (result[byteIndex]));
 		}
