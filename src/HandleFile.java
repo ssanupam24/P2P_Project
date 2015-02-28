@@ -146,8 +146,6 @@ public class HandleFile{
 	   write (AllFilesContent,DESTINATION_PATH);
 	  }
 	  
-	  //System.out.println("Merge was executed successfully.!");
-	  
 	 }
 	 
 	 public synchronized byte[] getChunk(int chunkId)
@@ -170,7 +168,6 @@ public class HandleFile{
 			e.printStackTrace();
 		}
 		 catch (IOException e) {
-			//System.out.println("Some kind of IO exeption occured");
 			e.printStackTrace();
 		}
 		 
