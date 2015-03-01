@@ -30,7 +30,7 @@ public class PeerInfo implements Runnable {
 	{
 		peer_id = peerID;
 		peerConfigs = new PeerConfigs();
-		
+		// Initalization here
 		// initialize handle file thing
 		// initialize logger
 		// initialize bitfield 
