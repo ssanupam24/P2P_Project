@@ -32,13 +32,12 @@ public class HandshakeMessage {
 	
 	 public void sendMessage(Socket socket){
 		 try{
-		 OutputStream os = socket.getOutputStream();
-         OutputStreamWriter osw = new OutputStreamWriter(os);
-         BufferedWriter output = new BufferedWriter(osw);
-
-				output.write(header);
-				output.write(zerobits.toString());
-				output.write(peerID);
+			OutputStream os = socket.getOutputStream();
+			OutputStreamWriter osw = new OutputStreamWriter(os);
+			BufferedWriter output = new BufferedWriter(osw);
+			output.write(header);
+			output.write(zerobits.toString());
+			output.write(peerID);
 		} 
 		  catch (IOException e) {
 			e.printStackTrace();
@@ -53,7 +52,7 @@ public class HandshakeMessage {
              InputStreamReader isr = new InputStreamReader(is);
              BufferedReader br = new BufferedReader(isr);
              String input = br.readLine();
-             peerID = Integer.parseInt(input.substring(27));
+             peerID = Integer.parseInt(input.substring(28));
 			 
 		 }
 		  catch (Exception e) {

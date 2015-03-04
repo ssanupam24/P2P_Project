@@ -8,10 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 /*
- * @author Abhishek
+ * @author Abhishek and Anupam
  * @description: this class is responsible for file writing and file reading and fragmenting it into number of chunks 
  * depending on the chunk size.
  * 
@@ -19,15 +20,46 @@ import java.util.ArrayList;
 
 public class HandleFile{
 	
-	private String filename;
-	private int CHUNK_SIZE;
+	private RandomAccessFile filename;
+	private PeerConfigs fileConfig;
 	
-	public HandleFile(String filename, int CHUNK_SIZE) {
-		this.filename = "peer_" + PeerInfo.getID() + "/" + filename;
-		this.CHUNK_SIZE = CHUNK_SIZE;
+	public HandleFile(int id, PeerConfigs fileConfig) throws FileNotFoundException {
+		this.fileConfig = fileConfig;
+		String path = "peer_" + id + "/";
+		File newFolder = new File(path);
+		if(!newFolder.exists()){
+			//Create new directory if not present
+			newFolder.mkdir();
+		}
+		this.filename = new RandomAccessFile(path + fileConfig.getFileName(), "rw");
+	}
+	//Write a piece in a file
+	public synchronized void writeFile(Piece p) throws IOException{
+		int size = fileConfig.getSizeOfPiece();
+		int offset;
+		int len;
+		offset = size * p.getPieceNum();
+		len = p.getPieceContent().length;
+		filename.seek(offset);
+		filename.write(p.getPieceContent());
+	}
+	//Read a piece from a file
+	public synchronized Piece readFile(int id) throws IOException{
+		int length;
+		//Get the total length of the piece
+		if(id == fileConfig.getTotalPieces() - 1)
+			length = fileConfig.getSizeOfLastPiece();
+		else
+			length = fileConfig.getSizeOfPiece();
+		int offset = fileConfig.getSizeOfPiece() * id;
+		filename.seek(offset); //Shifts the pointer to the desired location
+		byte[] pieceContent = new byte[length];
+		filename.read(pieceContent); //It will read length bytes from the offset position
+		Piece p = new Piece(pieceContent, id);
+		return p;
 	}
 
-	public ArrayList<String> readAndFragment () throws IOException
+	/*public ArrayList<String> readAndFragment () throws IOException
 	 {
 		 String filedir= this.filename;
 	  File willBeRead = new File ( filedir );
@@ -102,7 +134,7 @@ public class HandleFile{
 		 * 
 		 */
 	 
-	 public void mergeParts ( ArrayList<String> nameList, String DESTINATION_PATH )
+	 /*public void mergeParts ( ArrayList<String> nameList, String DESTINATION_PATH )
 	 {
 	 File[] file = new File[nameList.size()];
 	  byte AllFilesContent[] = null;
@@ -172,7 +204,7 @@ public class HandleFile{
 		}
 		 
 		 return temp;
-	 }
+	 }*/
 	}
 	 
 	
