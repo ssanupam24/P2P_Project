@@ -240,6 +240,7 @@ public class PeerConfigs {
 	            	   else if(modResult == 0) // token indicates whether the peer has the whole file
 	            	   {
 	            		   ++totalPeers;
+	            		   
 	            		   if(tokenizer.nval == 0)
 	            			   hasWholeFile.add(false);
 	            		   else if(tokenizer.nval == 1)
