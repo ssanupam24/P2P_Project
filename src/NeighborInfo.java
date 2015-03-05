@@ -40,7 +40,7 @@ public class NeighborInfo {
 	public Socket getControlSocket(){
 		return controlSocket;
 	}
-	public int getAmountOfDonwload(){
+	public int getAmountOfDownload(){
 		return amountOfDownload;
 	}
 	public void resetDownload(){
