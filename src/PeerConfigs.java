@@ -27,11 +27,11 @@ public class PeerConfigs {
 	private ArrayList<Boolean> hasWholeFile;
 	private ArrayList<Integer> havePortList;
 	
-	public PeerConfigs(String commonConfig, String peerConfig) throws FileNotFoundException
+	public PeerConfigs() throws FileNotFoundException
 	{
 		String path = System.getProperty("user.home") + "/project/"; 
-		readCommonConfig(path + commonConfig);
-		readPeerInfoConfig(path + peerConfig);
+		readCommonConfig(path + "Common.cfg");
+		readPeerInfoConfig(path + "PeerInfo.cfg");
 	}
 	
 	public int getPrefNeighbors(){
@@ -311,8 +311,39 @@ public class PeerConfigs {
 		}
 	}
 	
+	public int getPeerListElement(int index)
+	{
+		return peerList.get(index);
+	}
+	
+	public String getHostListElement(int index)
+	{
+		return hostList.get(index);
+	}
+	
+	public int getDownloadPortListElement(int index)
+	{
+		return downloadPortList.get(index);
+	}
+	
+	public int getUploadPortListElement(int index)
+	{
+		return uploadPortList.get(index);
+	}
+	
+	public int getHavePortListElement(int index)
+	{
+		return havePortList.get(index);
+	}
+	
+	public boolean getHasWholeFileElement(int index)
+	{
+		return hasWholeFile.get(index);
+	}
+	
+	
 	public static void main(String [] args) throws FileNotFoundException
 	{	
-		PeerConfigs config = new PeerConfigs("Common.cfg", "PeerInfo2.cfg");
+		PeerConfigs config = new PeerConfigs();
 	}
 }
