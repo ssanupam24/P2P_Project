@@ -74,4 +74,7 @@ public class NeighborInfo {
 	public int incAmountOfDownload(){
 		return amountOfDownload++;
 	}
+	public Boolean setChokeState(int value, int newValue){
+		return stateOfChoke.compareAndSet(value, newValue);
+	}
 }
