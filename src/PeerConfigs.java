@@ -269,8 +269,8 @@ public class PeerConfigs {
      		   System.out.println("Error:  No peer information in the configuration file.");    		   
      		   System.exit(-1);	
 			}
-			else
-				printPeerInfo(totalPeers);
+			//else
+				//printPeerInfo(totalPeers);
 		}
 		catch(IOException exception)
 		{
@@ -311,32 +311,32 @@ public class PeerConfigs {
 		}
 	}
 	
-	public int getPeerListElement(int index)
+	public int getPeerList(int index)
 	{
 		return peerList.get(index);
 	}
 	
-	public String getHostListElement(int index)
+	public String getHostList(int index)
 	{
 		return hostList.get(index);
 	}
 	
-	public int getDownloadPortListElement(int index)
+	public int getDownloadPortList(int index)
 	{
 		return downloadPortList.get(index);
 	}
 	
-	public int getUploadPortListElement(int index)
+	public int getUploadPortList(int index)
 	{
 		return uploadPortList.get(index);
 	}
 	
-	public int getHavePortListElement(int index)
+	public int getHavePortList(int index)
 	{
 		return havePortList.get(index);
 	}
 	
-	public boolean getHasWholeFileElement(int index)
+	public boolean getHasWholeFile(int index)
 	{
 		return hasWholeFile.get(index);
 	}
