@@ -15,16 +15,12 @@ public class NeighborInfo {
 	private Socket controlSocket;
 	private int amountOfDownload;
 	
-	public NeighborInfo(int peerID, int numPieces, String host, int port) throws UnknownHostException, IOException
+	public NeighborInfo(int peerID, int numPieces) throws UnknownHostException, IOException
 	{
 		peer_id = peerID;
 		stateOfChoke = new AtomicInteger(0);
 		bitField = new BitField(numPieces);
 		resetDownload();
-		
-		uploadSocket = new Socket(host, port);
-		downloadSocket = new Socket(host, port);
-		controlSocket = new Socket(host, port);
 	}
 	public int getPeerId(){
 		return peer_id;
@@ -64,6 +60,15 @@ public class NeighborInfo {
 	}
 	public void setBitField(byte[] BitFieldNew){
 		bitField.setBitFromByte(BitFieldNew);
+	}
+	public void setUploadSocket(Socket socket){
+		uploadSocket = socket;
+	}
+	public void setDownloadSocket(Socket socket){
+		downloadSocket = socket;
+	}
+	public void setControlSocket(Socket socket){
+		controlSocket = socket;
 	}
 	public Boolean hasFinished(){
 		return bitField.getFinished();
