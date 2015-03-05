@@ -14,6 +14,10 @@ import java.net.*;
 
 
 public class PeerInfo implements Runnable{
+	/*
+	 * First section of class vars are part of the dummy class.  Need to figure out 
+	 * what we need or don't need from this.
+	 */
 	private static int Peer_id;
 	public static int unchokeInterval;
 	public static int optimisticUnchokeInterval;	
@@ -48,7 +52,6 @@ public class PeerInfo implements Runnable{
 	
 	public void run()
 	{
-		System.out.println("Wooga!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 		try {
 			setupNeighborAndSelfInfo();
 		} catch (UnknownHostException e) {
@@ -56,16 +59,6 @@ public class PeerInfo implements Runnable{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		// during self init create server Socket & client Socket
-		// set sockets to the function
-		// do have & interested msg exhange in here in a while loop
-		// setup TCP connection attempts in a while loop until connection successful
-		// Loop through all peers
-			// if hit your self, create server socket for yourself
-		    // else for all other peers, create a client socket for yourself so you can connect to the other peers
-		// Separate ExecutorService for download & upload & have
-		// Handle exceptions for the tasks and restart the tasks, if possible
 	}
 	
 	public void setupNeighborAndSelfInfo() throws UnknownHostException, IOException
@@ -78,17 +71,18 @@ public class PeerInfo implements Runnable{
 		
 		int totalPeers = peerConfigs.getTotalPeers();
 		totalNeighbors = totalPeers - 1;
-		int index = 0; // index of current neighbor for intialization purposes
+		int index = 0; // index of current neighbor for initialization purposes
 
 		neighborInfo = new NeighborInfo[totalNeighbors];
 		
+		// Iterate through all peers in the peerConfigs object
 		for(int i = 0; i < totalPeers; ++i)
 		{
 			currPeerID = peerConfigs.getPeerList(i);
 			host = peerConfigs.getHostList(i);
 			port = peerConfigs.getUploadPortList(i);
 			
-			// ensures the array is not populated with the current peer's information
+			// If a neighbor, populate neighbor information and set up client sockets
 			if(currPeerID != peer_id)
 			{
 				neighborInfo[index] = new NeighborInfo(currPeerID, totalPieces);
@@ -99,17 +93,17 @@ public class PeerInfo implements Runnable{
 					neighborInfo[index].setDownloadAmount(totalPieces);
 				}	
 				
-				setOthersInitialization(index, host, port);
+				setOthersInitialization(index, host, port); // sets up client sockets
 				
 				++index;
 			}
-			else
+			else // If self, set up BitField and server sockets
 			{
 				if(peerConfigs.getHasWholeFile(i))
 					bitfield.setAllBitsTrue();
 				
 				peerIndex = i;
-				setSelfInitialization(peerIndex);
+				setSelfInitialization(peerIndex); // sets up server sockets
 			}
 		}
 	}
@@ -144,12 +138,11 @@ public class PeerInfo implements Runnable{
 	
 	public static void main(String [] args) throws NumberFormatException, IOException
 	{	
+		// Create PeerInfo object and start it as a separate thread
 		PeerInfo config = new PeerInfo(Integer.parseInt(args[0]));
-		config.run();
-		// create a thread object with PeerINfo obj as thread arg
-		// start thread
+        Thread t = new Thread(config);
+        t.start();
 	}
-	
 	
 	public static int getPeerID(){
 		return peer_id;
