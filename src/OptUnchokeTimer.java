@@ -14,7 +14,7 @@ public class OptUnchokeTimer {
 
 	public OptUnchokeTimer () {
 		this.timer = new Timer();		
-		timer.schedule(new OptUnchoke(), 0, PeerInfo.optimisticUnchokeInterval);  
+		//timer.schedule(new OptUnchoke(), 0, PeerInfo.optimisticUnchokeInterval);  
 	} 
 	
 	public void stop() {
