@@ -234,8 +234,8 @@ public class PeerConfigs {
 	            		   }
 	            		   
 	            		   downloadPortList.add(lineNum, (int) tokenizer.nval);
-	            		   uploadPortList.add(lineNum, (int) tokenizer.nval);
-	            		   havePortList.add(lineNum, (int) tokenizer.nval);
+	            		   uploadPortList.add(lineNum, (int) tokenizer.nval + 1);
+	            		   havePortList.add(lineNum, (int) tokenizer.nval + 2);
 	            	   }
 	            	   else if(modResult == 0) // token indicates whether the peer has the whole file
 	            	   {
