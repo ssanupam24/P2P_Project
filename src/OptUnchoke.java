@@ -34,12 +34,21 @@ public class OptUnchoke implements Callable<Object> {
 	{
 		Random randomGenerator = new Random();
 		int index = 0;
+		int index1 = 0;
+		boolean flag;
+		boolean finished;
+		long startTimer;
+		Socket sock;
+		InputStream input;
+		OutputStream output;
+		Message m = new Message();
 		try {
 		//PeerInfo.optimisticUnchokedPeer = PeerInfo.chokedInterested.get(index);
 		while(true) {
 			//Select a peer randomly for optUnchoke
-			long startTimer = System.currentTimeMillis();
-			boolean flag = false;
+			startTimer = System.currentTimeMillis();
+			flag = false;
+			finished = true;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if (neighborArray[index].getBitField().checkPiecesInterested(
@@ -47,13 +56,11 @@ public class OptUnchoke implements Callable<Object> {
 						&& neighborArray[index].setChokeState(0, 1))
 					flag = true;
 			}
-			LoggerPeer log = new LoggerPeer(neighborArray[index].getPeerId());
-			log.changeOfOptUnchokedNeighbourLog(PeerInfo.optimisticUnchokedPeer);
-			Socket sock = neighborArray[index].getUploadSocket();
-			InputStream input = sock.getInputStream();
-			OutputStream output = sock.getOutputStream();
+			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
+			sock = neighborArray[index].getUploadSocket();
+			input = sock.getInputStream();
+			output = sock.getOutputStream();
 			//Send unchoke message
-			Message m = new Message();
 			m.setType(Message.unchoke);
 			m.setPayload(null);
 			m.sendMessage(output);
@@ -61,13 +68,13 @@ public class OptUnchoke implements Callable<Object> {
 			while(true){
 				m.receiveMessage(input);
 				if(m.getType() == Message.request){
-					int index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
+					index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
 					Piece newPiece = file.readFile(index1);
 					m.setType(Message.piece);
 					m.setPayload(newPiece.getPieceContent());
 					m.sendMessage(output);
 				}
-				if((System.currentTimeMillis() - startTimer) > (optInterval * 1000)){
+				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
 					m.setType(Message.choke);
 					m.setPayload(null);
 					m.sendMessage(output);
@@ -75,11 +82,19 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				}
 			}
+			//Check whether all the peers have downloaded the entire file or not
+			for(int i = 0; i < neighborArray.length; i++){
+				if(!neighborArray[i].hasFinished())
+					finished = false;
 			}
+			//if yes then break from the loop and return null
+			if(finished)
+				break;
+		}
 		}
 		catch (IOException ex) {
 				ex.printStackTrace();
 		}
-		return new Object();
+		return null;
 	}
 }
