@@ -61,7 +61,7 @@ public class OptUnchoke implements Callable<Object> {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if ((neighborArray[index].getPeerId() != peerId)
 						&& (neighborArray[index].getBitField().checkPiecesInterested(bits))
-						&& (neighborArray[index].setChokeState(0, 1)))
+						&& (neighborArray[index].setChokedByNeighborState(0, 1)))
 					flag = true;
 			}
 			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
@@ -83,10 +83,14 @@ public class OptUnchoke implements Callable<Object> {
 					m.sendMessage(output);
 				}
 				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
-					m.setType(Message.choke);
-					m.setPayload(null);
-					m.sendMessage(output);
-					neighborArray[index].setChoked();
+					// if the neighbor is not your preferred neighbor, then choke
+					if(neighborArray[index].getNeighborChokedState() != 2)
+					{
+						m.setType(Message.choke);
+						m.setPayload(null);
+						m.sendMessage(output);
+						neighborArray[index].setChokedByNeighbor();
+					}
 					break;
 				}
 			}

@@ -8,7 +8,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class NeighborInfo {
 	private int peer_id;
-	private AtomicInteger stateOfChoke;
+	private AtomicInteger chokedByNeighborState; // indicates whether this neighbor is choking the peer
+	private AtomicInteger neighborChokedState; // indicates whether this neighbor is choked by the peer
 	private BitField bitField;
 	private Socket uploadSocket;
 	private Socket downloadSocket;
@@ -18,7 +19,8 @@ public class NeighborInfo {
 	public NeighborInfo(int peerID, int numPieces) throws UnknownHostException, IOException
 	{
 		peer_id = peerID;
-		stateOfChoke = new AtomicInteger(0);
+		chokedByNeighborState = new AtomicInteger(0);
+		neighborChokedState = new AtomicInteger(0);
 		bitField = new BitField(numPieces);
 		resetDownload();
 	}
@@ -28,8 +30,11 @@ public class NeighborInfo {
 	public BitField getBitField(){
 		return bitField;
 	}
-	public int getStateOfChoke(){
-		return stateOfChoke.get();
+	public int getChokedByNeighborState(){
+		return chokedByNeighborState.get();
+	}
+	public int getNeighborChokedState(){
+		return neighborChokedState.get();
 	}
 	public Socket getUploadSocket(){
 		return uploadSocket;
@@ -46,12 +51,24 @@ public class NeighborInfo {
 	public void resetDownload(){
 		amountOfDownload = 0;
 	}
-	public void setChoked(){
-		stateOfChoke.set(0);
+	public void setNeighborChoked(){
+		neighborChokedState.set(0);
 	}
-	public void setUnchoked(){
-		stateOfChoke.set(1);
+	public void setNeighborOptUnchoked(){
+		neighborChokedState.set(1);
 	}
+	public void setNeighborPreferred(){
+		neighborChokedState.set(2);
+	}	
+	public void setChokedByNeighbor(){
+		chokedByNeighborState.set(0);
+	}
+	public void setOptUnchokedByNeighbor(){
+		chokedByNeighborState.set(1);
+	}
+	public void setPreferredByNeighbor(){
+		chokedByNeighborState.set(2);
+	}	
 	public void setDownloadAmount(int amount){
 		amountOfDownload = amount;
 	}
@@ -79,7 +96,10 @@ public class NeighborInfo {
 	public int incAmountOfDownload(){
 		return amountOfDownload++;
 	}
-	public Boolean setChokeState(int value, int newValue){
-		return stateOfChoke.compareAndSet(value, newValue);
+	public Boolean setChokedByNeighborState(int value, int newValue){
+		return chokedByNeighborState.compareAndSet(value, newValue);
 	}
+	public Boolean setNeighborChokedState(int value, int newValue){
+		return neighborChokedState.compareAndSet(value, newValue);
+	}	
 }
