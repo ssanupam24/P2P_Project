@@ -25,7 +25,7 @@ public class HandleFile{
 	
 	public HandleFile(int id, PeerConfigs fileConfig) throws FileNotFoundException {
 		this.fileConfig = fileConfig;
-		String path = "peer_" + id + "/";
+		String path = System.getProperty("user.home") + "/project/peer_" + id + "/";
 		File newFolder = new File(path);
 		if(!newFolder.exists()){
 			//Create new directory if not present
@@ -37,9 +37,9 @@ public class HandleFile{
 	public synchronized void writeFile(Piece p) throws IOException{
 		int size = fileConfig.getSizeOfPiece();
 		int offset;
-		int len;
+		//int len;
 		offset = size * p.getPieceNum();
-		len = p.getPieceContent().length;
+		//len = p.getPieceContent().length;
 		filename.seek(offset);
 		filename.write(p.getPieceContent());
 	}
