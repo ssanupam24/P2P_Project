@@ -49,11 +49,19 @@ public class OptUnchoke implements Callable<Object> {
 			startTimer = System.currentTimeMillis();
 			flag = false;
 			finished = true;
+			//Check whether all the peers have downloaded the entire file or not
+			for(int i = 0; i < neighborArray.length; i++){
+				if(!neighborArray[i].hasFinished())
+					finished = false;
+			}
+			//if yes then break from the loop and return null
+			if(finished)
+				break;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
-				if (neighborArray[index].getBitField().checkPiecesInterested(
-						bits)
-						&& neighborArray[index].setChokeState(0, 1))
+				if ((neighborArray[index].getPeerId() != peerId)
+						&& (neighborArray[index].getBitField().checkPiecesInterested(bits))
+						&& (neighborArray[index].setChokeState(0, 1)))
 					flag = true;
 			}
 			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
@@ -82,14 +90,6 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				}
 			}
-			//Check whether all the peers have downloaded the entire file or not
-			for(int i = 0; i < neighborArray.length; i++){
-				if(!neighborArray[i].hasFinished())
-					finished = false;
-			}
-			//if yes then break from the loop and return null
-			if(finished)
-				break;
 		}
 		}
 		catch (IOException ex) {

@@ -23,8 +23,9 @@ public class LoggerPeer
 		Date date = new Date();
 		this.logTime = new Timestamp(date.getTime());
 		
-		file = new File("log_peer_"+peerId+".log");
-
+		file = new File(System.getProperty("user.home") + "/project/" + "log_peer_"+ peerId +".log");
+		//If a file exists then why are we deleting the log file? 
+		//All log files should be deleted when we start a new process
 		if(file.exists()) file.delete();
 		file.createNewFile();
 		
