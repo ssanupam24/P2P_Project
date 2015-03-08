@@ -135,7 +135,7 @@ public class LoggerPeer
 	
 	public synchronized void downloadingLog(int peer_2, int pieceIndex, int numPieces)
 	{
-		String str = getTime() + ": Peer " + peerId + " has downloaded the piece " + pieceIndex + " from " + peer_2 + "." + " Now the number of pieces it has is " + numPieces + ".";
+		String str = getTime() + ": Peer " + peerId + " has downloaded the piece " + pieceIndex + " from " + peer_2 + "." + "\nNow the number of pieces it has is " + numPieces + ".";
 		writeToFile(str);
 	}
 	
