@@ -45,10 +45,11 @@ public class Unchoke implements Callable<Object> {
 		m.setPayload(null);
 		m.setType(Message.unchoke);
 		m.sendMessage(output);
-		long startTimer = System.currentTimeMillis();
+		long startTimer;
 		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
 		//for those neighbors
 		while(true){
+			startTimer = System.currentTimeMillis();
 			m.receiveMessage(input);
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
