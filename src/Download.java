@@ -18,7 +18,7 @@ public class Download implements Callable<Object> {
 	private HandleFile file;
 	//The selfinfo variable has the neighborinfo record of the client peer
 	public Download(int peerId, NeighborInfo[] neighborArray, NeighborInfo selfInfo, BitField bits, HandleFile file, LoggerPeer logger) throws IOException{
-		this.bits = bits;
+	 	this.bits = bits;
 		this.file = file;
 		this.logger = logger;
 		this.neighborArray = neighborArray;
