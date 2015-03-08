@@ -17,10 +17,10 @@ public class Download implements Callable<Object> {
 	private LoggerPeer logger;
 	private HandleFile file;
 	//The selfinfo variable has the neighborinfo record of the client peer
-	public Download(int peerId, NeighborInfo[] neighborArray, NeighborInfo selfInfo, BitField bits, HandleFile file) throws IOException{
+	public Download(int peerId, NeighborInfo[] neighborArray, NeighborInfo selfInfo, BitField bits, HandleFile file, LoggerPeer logger) throws IOException{
 		this.bits = bits;
 		this.file = file;
-		this.logger = new LoggerPeer(peerId);
+		this.logger = logger;
 		this.neighborArray = neighborArray;
 		this.peerId = peerId;
 		this.selfInfo = selfInfo;
