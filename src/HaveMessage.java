@@ -45,8 +45,10 @@ public class HaveMessage implements Callable<Object> {
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborArray.length; i++){
-				if(!neighborArray[i].hasFinished())
+				if(!neighborArray[i].hasFinished()) {
 					finished = false;
+					break;
+				}
 			}
 			//if yes then break from the loop and return null
 			if(finished)
@@ -57,6 +59,6 @@ public class HaveMessage implements Callable<Object> {
 				logger.haveLog(selfInfo.getPeerId(), pieceIndex);
 			}
 		}
-		return null;
+		return new Object();
 	}
 	}
