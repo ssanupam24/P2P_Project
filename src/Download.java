@@ -9,13 +9,14 @@ import java.util.concurrent.Callable;
  * @author Anupam
  */
 public class Download implements Callable<Object> {
+	//PeerID is the host(server) peer process
 	private int peerId;
 	private NeighborInfo[] neighborArray;
 	private NeighborInfo selfInfo;
 	private BitField bits;
 	private LoggerPeer logger;
 	private HandleFile file;
-	
+	//The selfinfo variable has the neighborinfo record of the client peer
 	public Download(int peerId, NeighborInfo[] neighborArray, NeighborInfo selfInfo, BitField bits, HandleFile file) throws IOException{
 		this.bits = bits;
 		this.file = file;
@@ -72,7 +73,7 @@ public class Download implements Callable<Object> {
 								file.writeFile(p);
 								bits.setBitToTrue(pieceIndex);
 								selfInfo.incAmountOfDownload();
-								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex);
+								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, selfInfo.getAmountOfDownload());
 								//Create a have message and send it to all peers
 								m.setType(Message.have);
 								m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));

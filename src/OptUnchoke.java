@@ -15,7 +15,7 @@ import java.util.concurrent.Callable;
  */
 //How can we put this in a callable object since this has to be run parallely
 public class OptUnchoke implements Callable<Object> {
-
+	//PeerID is the host(server) peer process
 	private int peerId;
 	private NeighborInfo[] neighborArray;
 	private BitField bits;
