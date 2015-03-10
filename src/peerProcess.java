@@ -15,7 +15,7 @@ import java.net.*;
 */
 
 
-public class PeerInfo implements Runnable{
+public class peerProcess implements Runnable{
 	/*
 	 * First section of class vars are part of the dummy class.  Need to figure out 
 	 * what we need or don't need from this.
@@ -25,7 +25,6 @@ public class PeerInfo implements Runnable{
 	public static int optimisticUnchokeInterval;	
 	public static ArrayList <Integer>  chokedInterested;  //List of CHOKED neighbours who would be interested. 
 	public static int optimisticUnchokedPeer;
-	public static OptUnchokeTimer optUnchokeTimer;
 	public static ArrayList <Integer> Choked;
 	public static ArrayList <Integer>  UnchokedTopK;
 
@@ -37,7 +36,7 @@ public class PeerInfo implements Runnable{
 	private NeighborInfo[] neighborInfo;
 	private int totalNeighbors;
 	
-	public PeerInfo(int peerID) throws IOException
+	public peerProcess(int peerID) throws IOException
 	{
 		peer_id = peerID;
 		peerConfigs = new PeerConfigs();
@@ -62,8 +61,8 @@ public class PeerInfo implements Runnable{
 	{
 		for(int i = 0; i < totalNeighbors; ++i)
 		{
-			System.out.printf("Neighbor %d\nPeerID: %d\nStateOfChoke: %d\nAmount of download: %d", i,
-					neighborInfo[i].getPeerId(), neighborInfo[i].getChokedByNeighborState(), neighborInfo[i].getAmountOfDownload());
+			System.out.printf("Neighbor %d\nPeerID: %d\nStateOfChoke: %d", i,
+					neighborInfo[i].getPeerId(), neighborInfo[i].getChokedByNeighborState());
 		}
 	}
 	
@@ -78,17 +77,9 @@ public class PeerInfo implements Runnable{
 		int havePort;
 		
 		int totalPeers = peerConfigs.getTotalPeers();
-		totalNeighbors = totalPeers - 1;
-		int index = 0; // index of current neighbor for initialization purposes
-
-		for(int i = 0; i < totalPeers; ++i)
-			if(peerConfigs.getPeerList(i) == peer_id)
-			{
-				peerIndex = i;
-				break;
-			}
+		totalNeighbors = totalPeers-1;
 		
-		neighborInfo = new NeighborInfo[totalNeighbors];
+		neighborInfo = new NeighborInfo[totalPeers];
 		
 		// Iterate through all peers in the peerConfigs object
 		for(int i = 0; i < totalPeers; ++i)
@@ -99,20 +90,15 @@ public class PeerInfo implements Runnable{
 			uploadPort = peerConfigs.getUploadPortList(i);
 			havePort = peerConfigs.getHavePortList(i);
 			
+			neighborInfo[i] = new NeighborInfo(currPeerID, totalPieces);
+			
+			if(peerConfigs.getHasWholeFile(i))
+				neighborInfo[i].getBitField().setAllBitsTrue();	
+			
 			// If a neighbor, populate neighbor information and set up client sockets
 			if(currPeerID != peer_id)
-			{
-				neighborInfo[index] = new NeighborInfo(currPeerID, totalPieces);
-				
-				if(peerConfigs.getHasWholeFile(i))
-				{
-					neighborInfo[index].getBitField().setAllBitsTrue();					
-					neighborInfo[index].setDownloadAmount(totalPieces);
-				}	
-					
-				setOthersInitialization(index, peerIndex, host, downloadPort, uploadPort, havePort); // sets up client sockets
-				
-				++index;
+			{					
+				setOthersInitialization(i, peerIndex, host, downloadPort, uploadPort, havePort); // sets up client sockets
 			}
 			else // If self, set up BitField and server sockets
 			{
@@ -128,6 +114,7 @@ public class PeerInfo implements Runnable{
 		}
 	}
 	
+	// left off here... need to fix handshaking/bitfield thing
 	public void setSelfInitialization(ServerSocket uploadServerSocket, 
 			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws IOException
 	{
@@ -135,36 +122,30 @@ public class PeerInfo implements Runnable{
 		Socket uploadSocket = uploadServerSocket.accept();
 		Socket downloadSocket = downloadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
+	
+		neighborInfo[index].setUploadSocket(uploadSocket);
+		neighborInfo[index].setDownloadSocket(downloadSocket);
+		neighborInfo[index].setControlSocket(haveSocket);
 		
 		Socket socket;
 		InputStream input;
 		OutputStream output;
-		int numHandshakesToSend = index;
+		int numHandshakesExpected = peerConfigs.getTotalPeers() - index - 1;
 		
-		// add code for handshaking
+		HandshakeMessage receivedHandshake = new HandshakeMessage();	
+		Message m = new Message();
 		
-		for(int i = 0; i < index; ++i)
-		{
-			socket = neighborInfo[i].getUploadSocket();
-			
-			HandshakeMessage m = new HandshakeMessage();
-			m.sendMessage(socket);
-		}
-		
-		// need to simultaneously read for bitfields & handshake replies or is it fine to keep them separate??
 		int i = 0;
-		while(i < numHandshakesToSend)
+		while(i < numHandshakesExpected)
 		{
 			socket = neighborInfo[i].getUploadSocket();
 			input = socket.getInputStream();
 			output = socket.getOutputStream();
 			
-			HandshakeMessage receivedHandshake = new HandshakeMessage();	
 			receivedHandshake.receiveMessage(socket);
 			
 			if(handshakeValid(receivedHandshake, index))
 			{
-				Message m = new Message();
 				m.setType(Message.bitfield);
 				m.setPayload(bitfield.changeBitToByteField());
 				m.sendMessage(output);
@@ -181,43 +162,55 @@ public class PeerInfo implements Runnable{
 		
 		// set up client sockets for an other peer
 		Socket uploadClientSocket = new Socket(host, downloadPort);
-		neighborInfo[neighborIndex].setUploadSocket(uploadClientSocket);
-	
 		Socket downloadClientSocket = new Socket(host, uploadPort);
-		neighborInfo[neighborIndex].setDownloadSocket(downloadClientSocket);
-		
 		Socket haveClientSocket = new Socket(host, havePort);
+	
+		// put client sockets in the neighborInfo array
+		neighborInfo[neighborIndex].setDownloadSocket(downloadClientSocket);
+		neighborInfo[neighborIndex].setUploadSocket(uploadClientSocket);
 		neighborInfo[neighborIndex].setControlSocket(haveClientSocket);
 
-		for(int i = 0; i < peerIndex; ++i)
-		{			
-			HandshakeMessage m = new HandshakeMessage();
-			m.sendMessage(uploadClientSocket);
-		}
+		input = uploadClientSocket.getInputStream();
+		output = uploadClientSocket.getOutputStream();
 		
-		// need to simultaneously read for bitfields & handshake replies or is it fine to keep them separate??
-		int i = 0;
-		while(i < peerIndex)
-		{
-			input = uploadClientSocket.getInputStream();
-			output = uploadClientSocket.getOutputStream();
+		HandshakeMessage hs = new HandshakeMessage();
+		HandshakeMessage receivedHandshake = new HandshakeMessage();
+		Message m = new Message();
+		boolean flag = true;
+		
+		byte[] bits;
+		
+		if(neighborIndex < peerIndex)
+		{			
+			hs.setPeerID(peerIndex);
+			hs.sendMessage(uploadClientSocket);
 			
-			HandshakeMessage receivedHandshake = new HandshakeMessage();	
-			receivedHandshake.receiveMessage(uploadClientSocket);
-			
-			if(handshakeValid(receivedHandshake, peerIndex))
-			{
-				Message m = new Message();
-				m.setType(Message.bitfield);
-				m.setPayload(bitfield.changeBitToByteField());
-				m.sendMessage(output);
+			while(flag)
+			{		
+				receivedHandshake.receiveMessage(uploadClientSocket);
 				
-				++i;
+				if(receivedHandshake.getPeerID() == neighborIndex)
+				{
+					m.setType(Message.bitfield);
+					m.setPayload(neighborInfo[peerIndex].getBitField().changeBitToByteField());
+					m.sendMessage(output);
+					flag = false;
+				}
+			}	
+			
+			flag = true;
+			
+			while(flag)
+			{
+				m.receiveMessage(input);
+				if(m.getType() == m.bitfield)
+				{
+					bits = m.getPayload();
+					neighborInfo[neighborIndex].setBitField(bits);		
+					flag = false;
+				}
 			}
 		}
-		
-		
-		// do handshaking logic here
 	}
 	
 	public boolean handshakeValid(HandshakeMessage hs, int peerIndex)
@@ -239,7 +232,7 @@ public class PeerInfo implements Runnable{
 	public static void main(String [] args) throws NumberFormatException, IOException
 	{	
 		// Create PeerInfo object and start it as a separate thread
-		PeerInfo config = new PeerInfo(Integer.parseInt(args[0]));
+		peerProcess config = new peerProcess(Integer.parseInt(args[0]));
         Thread t = new Thread(config);
         t.start();
 	}
