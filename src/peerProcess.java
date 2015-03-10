@@ -203,7 +203,7 @@ public class peerProcess implements Runnable{
 			while(flag)
 			{
 				m.receiveMessage(input);
-				if(m.getType() == m.bitfield)
+				if(m.getType() == Message.bitfield)
 				{
 					bits = m.getPayload();
 					neighborInfo[neighborIndex].setBitField(bits);		

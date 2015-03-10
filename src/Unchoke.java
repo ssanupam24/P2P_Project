@@ -41,13 +41,13 @@ public class Unchoke implements Callable<Object> {
 	{
 		boolean finished;
 		int pieceIndex;
-		//Send Unchoke for the peer that created this callable and then start uploading
+		//Send Unchoke to the peer that created this callable and then start uploading
 		m.setPayload(null);
 		m.setType(Message.unchoke);
 		m.sendMessage(output);
 		long startTimer;
 		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
-		//for those neighbors
+		//for those neighbors, seems like it's efficient
 		while(true){
 			startTimer = System.currentTimeMillis();
 			m.receiveMessage(input);
@@ -59,7 +59,7 @@ public class Unchoke implements Callable<Object> {
 					break;
 				}
 			}
-			//if yes then break from the loop and return null
+			//if yes then break from the loop and return an Object to keep track of the task in peerProcess
 			if(finished)
 				break;
 			if(m.getType() == Message.request){
