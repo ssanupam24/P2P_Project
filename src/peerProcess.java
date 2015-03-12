@@ -10,11 +10,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.net.*;
 
-/*
-*Added this dummy class as of now since I needed this class in the OptChoke class.  --Abhishek
-*/
-
-
 public class peerProcess implements Runnable{
 	/*
 	 * First section of class vars are part of the dummy class.  Need to figure out 

@@ -9,7 +9,6 @@ public class BitField {
 	private boolean finished;
 	
 	public BitField(int totPieces){
-		//Initialize here
 		this.totPieces = totPieces;
 		bitPieceIndex = new boolean[totPieces];
 		countFinishedPieces = 0;
