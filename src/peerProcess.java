@@ -8,13 +8,14 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.net.*;
 
 public class peerProcess implements Runnable{
-	/*
-	 * First section of class vars are part of the dummy class.  Need to figure out 
-	 * what we need or don't need from this.
-	 */
+	//TODO: Add logger after every task
+	
 	private static int Peer_id;
 	public static int unchokeInterval;
 	public static int optimisticUnchokeInterval;	
@@ -38,18 +39,50 @@ public class peerProcess implements Runnable{
 		filePointer = new HandleFile(peer_id, peerConfigs);
 		log = new LoggerPeer(peer_id);
 		bitfield = new BitField(peerConfigs.getTotalPieces()); 
+		optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
+		unchokeInterval = peerConfigs.getTimeUnchoke();
 	}
 	
 	public void run()
 	{
 		try {
 			setupNeighborAndSelfInfo();
+			//The doomsday thread starts now. Good Luck!!!
+			ArrayList<Future<Object>> downList = new ArrayList<Future<Object>>();
+			ArrayList<Future<Object>> haveList = new ArrayList<Future<Object>>();
+			//Create executor services for download and have.
+			ExecutorService downloadPool = Executors.newFixedThreadPool(totalNeighbors);
+			ExecutorService havePool = Executors.newFixedThreadPool(totalNeighbors);
+			//Create a fixed thread executor service for optunchoke
+			ExecutorService optThread = Executors.newSingleThreadExecutor();
+			
+			for(int j = 0; j < totalNeighbors; j++){
+				NeighborInfo rec = neighborInfo[j];
+				Future<Object> downFuture = downloadPool.submit(new Download(peer_id, neighborInfo, rec, bitfield, filePointer, log));
+				downList.add(downFuture);
+				Future<Object> haveFuture = havePool.submit(new HaveMessage(peer_id, rec, log, neighborInfo));
+				haveList.add(haveFuture);
+				
+			}
+			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
+			//Call unchoker function to start unchoker callable
+			unchokerProcess();
+			//Now check all the future objects and shut down threads if done with 
+			//receiving and sending all the pieces
+			//TODO: Anupam>> Complete this ASAP
+			//Hopefully all the tasks are completed successfully and the control reaches here, 
+			//now its celebration time :)
+			
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		printNeighborInfo();	
+	}
+	//TODO: Anupam>> Complete this ASAP
+	public void unchokerProcess(){
+		
 	}
 	
 	public void printNeighborInfo()
@@ -154,7 +187,7 @@ public class peerProcess implements Runnable{
 		InputStream input;
 		OutputStream output;
 		
-		// set up client sockets for an other peer
+		// set up client sockets for peer apart from local server peer
 		Socket uploadClientSocket = new Socket(host, downloadPort);
 		Socket downloadClientSocket = new Socket(host, uploadPort);
 		Socket haveClientSocket = new Socket(host, havePort);
@@ -207,7 +240,8 @@ public class peerProcess implements Runnable{
 			}
 		}
 	}
-	
+	//You can verify from the peerId of the client peer after receiving the message.
+	//This function is not necessary
 	public boolean handshakeValid(HandshakeMessage hs, int peerIndex)
 	{
 		boolean valid = false;
