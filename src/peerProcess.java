@@ -21,8 +21,6 @@ public class peerProcess implements Runnable{
 	public static int optimisticUnchokeInterval;	
 	public static ArrayList <Integer>  chokedInterested;  //List of CHOKED neighbours who would be interested. 
 	public static int optimisticUnchokedPeer;
-	public static ArrayList <Integer> Choked;
-	public static ArrayList <Integer>  UnchokedTopK;
 
 	private static int peer_id;
 	private BitField bitfield;
@@ -69,7 +67,7 @@ public class peerProcess implements Runnable{
 			unchokerProcess();
 			//Now check all the future objects and shut down threads if done with 
 			//receiving and sending all the pieces
-			//TODO: Anupam>> Complete this ASAP
+			//TODO: For Anupam>> Complete this ASAP
 			//Hopefully all the tasks are completed successfully and the control reaches here, 
 			//now its celebration time :)
 			
@@ -80,9 +78,33 @@ public class peerProcess implements Runnable{
 		}
 		printNeighborInfo();	
 	}
-	//TODO: Anupam>> Complete this ASAP
-	public void unchokerProcess(){
-		
+	//TODO: For Anupam>> Complete this ASAP and don't procrastinate 
+	public void unchokerProcess() throws IOException{
+		//This arraylist will have all my preferred neighbors
+		ArrayList<NeighborInfo> prefNeighborList = new ArrayList<NeighborInfo>();
+		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
+		boolean finished;
+		while(true){
+			finished = true;
+			//Check whether all the peers have downloaded the entire file or not
+			for(int i = 0; i < neighborInfo.length; i++){
+				if(!neighborInfo[i].hasFinished())
+					finished = false;
+			}
+			//if yes then break from the loop and return null
+			if(finished)
+				break;
+			//Check all the download rate and select preferred neighbors
+			
+			//Start the threads for those neighbors
+			ArrayList<Future<Object>> uploadList = new ArrayList<Future<Object>>();
+			for(NeighborInfo rec : prefNeighborList){
+				//Check if choked perhaps?
+				Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, rec, log, neighborInfo, unchokeInterval, filePointer));
+				uploadList.add(uploadFuture);
+			}
+		}
+		uploadPool.shutdownNow();
 	}
 	
 	public void printNeighborInfo()
