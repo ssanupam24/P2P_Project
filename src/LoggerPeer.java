@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 
 /*
@@ -87,10 +88,10 @@ public class LoggerPeer
 		writeToFile(str);
 	}
 	
-	public synchronized void changeOfPreferredNeighbourLog(int[] peers)
+	public synchronized void changeOfPreferredNeighbourLog(ArrayList<Integer> prefList)
 	{
 		String peersArr = "";
-		for(int peer : peers){
+		for(int peer : prefList){
 		peersArr = peersArr + peer + ", ";
 		}
 		String str = getTime() + ": Peer " + peerId + " has the preferred neighbours "+ peersArr + ".";

@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -84,13 +85,19 @@ public class peerProcess implements Runnable{
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		printNeighborInfo();	
 	}
 	//TODO: For Anupam>> Complete this ASAP and don't procrastinate 
-	public void unchokerProcess() throws IOException{
+	public void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
-		
+		ArrayList<Integer> prefList = new ArrayList<Integer>();
 		TreeMap prefNeighborList = new TreeMap(Collections.reverseOrder());
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		boolean finished;
@@ -106,9 +113,10 @@ public class peerProcess implements Runnable{
 			if(finished)
 				break;
 			prefNeighborList.clear();
+			prefList.clear();
 			//Check all the download rate and select preferred neighbors
 			for(int i = 0; i < neighborInfo.length; i++){
-				if(neighborInfo[i].getPeerId() != peer_id){
+				if(neighborInfo[i].getPeerId() != peer_id && neighborInfo[i].getBitField().checkPiecesInterested(bitfield)){
 					prefNeighborList.put(neighborInfo[i].getAmountOfDownload(), i);
 				}
 			}
@@ -122,16 +130,19 @@ public class peerProcess implements Runnable{
 				neighborInfo[(Integer)m.getValue()].resetDownload();
 				if(counter >= peerConfigs.getPrefNeighbors())
 					break;
-				
+				prefList.add(neighborInfo[(Integer)m.getValue()].getPeerId());
 				//Check if choked perhaps?
 				Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[(Integer) m.getValue()], log, neighborInfo, unchokeInterval, filePointer));
 				uploadList.add(uploadFuture);
 				counter++;
 			}
-			
+			log.changeOfPreferredNeighbourLog(prefList);
+			//Wait for the future objects here till the upload threads complete their execution
+			for(Future<Object> f : uploadList){
+				f.get();
+			}
 		}
-		//Check the future objects here and verify whether the upload is done successfully or not
-		
+		//Finally the pool is shutdown 
 		uploadPool.shutdownNow();
 	}
 	
