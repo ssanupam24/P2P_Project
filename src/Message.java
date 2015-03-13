@@ -1,5 +1,5 @@
 /*
- * @author Anupam
+ * @author Anupam and Gloria
  * This class creates, send and receives messages through different streams
  */
 import java.io.*;
@@ -58,7 +58,7 @@ public class Message
    */
   public void sendMessage(OutputStream output) throws IOException
   {
-    // insert code here
+    
 	  try{
 	  if(messagePayload == null) 
 		  messageLength = 1;

@@ -8,6 +8,12 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -18,8 +24,10 @@ public class peerProcess implements Runnable{
 	
 	private static int Peer_id;
 	public static int unchokeInterval;
-	public static int optimisticUnchokeInterval;	
-	public static ArrayList <Integer>  chokedInterested;  //List of CHOKED neighbours who would be interested. 
+	public static int optimisticUnchokeInterval;
+	//Add all the interested neighbors in the below variable if you have the complete file
+	//Do the unchoke only for these neighbors and select it randomly
+	public static ArrayList <NeighborInfo>  unchokedInterested;  //List of UNCHOKED neighbours who would be interested. 
 	public static int optimisticUnchokedPeer;
 
 	private static int peer_id;
@@ -54,7 +62,8 @@ public class peerProcess implements Runnable{
 			//Create a fixed thread executor service for optunchoke
 			ExecutorService optThread = Executors.newSingleThreadExecutor();
 			
-			for(int j = 0; j < totalNeighbors; j++){
+			for(int j = 0; j < neighborInfo.length; j++){
+				
 				NeighborInfo rec = neighborInfo[j];
 				Future<Object> downFuture = downloadPool.submit(new Download(peer_id, neighborInfo, rec, bitfield, filePointer, log));
 				downList.add(downFuture);
@@ -80,10 +89,12 @@ public class peerProcess implements Runnable{
 	}
 	//TODO: For Anupam>> Complete this ASAP and don't procrastinate 
 	public void unchokerProcess() throws IOException{
-		//This arraylist will have all my preferred neighbors
-		ArrayList<NeighborInfo> prefNeighborList = new ArrayList<NeighborInfo>();
+		//This map will have all my preferred neighbors sorted in descending order according to download rates
+		
+		TreeMap prefNeighborList = new TreeMap(Collections.reverseOrder());
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		boolean finished;
+		int counter;
 		while(true){
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
@@ -94,16 +105,33 @@ public class peerProcess implements Runnable{
 			//if yes then break from the loop and return null
 			if(finished)
 				break;
+			prefNeighborList.clear();
 			//Check all the download rate and select preferred neighbors
-			
+			for(int i = 0; i < neighborInfo.length; i++){
+				if(neighborInfo[i].getPeerId() != peer_id){
+					prefNeighborList.put(neighborInfo[i].getAmountOfDownload(), i);
+				}
+			}
+			Set set = prefNeighborList.entrySet();
+			Iterator it = set.iterator();
 			//Start the threads for those neighbors
 			ArrayList<Future<Object>> uploadList = new ArrayList<Future<Object>>();
-			for(NeighborInfo rec : prefNeighborList){
+			counter = 0;
+			while(it.hasNext()){
+				Map.Entry m = (Map.Entry) it.next();
+				neighborInfo[(Integer)m.getValue()].resetDownload();
+				if(counter >= peerConfigs.getPrefNeighbors())
+					break;
+				
 				//Check if choked perhaps?
-				Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, rec, log, neighborInfo, unchokeInterval, filePointer));
+				Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[(Integer) m.getValue()], log, neighborInfo, unchokeInterval, filePointer));
 				uploadList.add(uploadFuture);
+				counter++;
 			}
+			
 		}
+		//Check the future objects here and verify whether the upload is done successfully or not
+		
 		uploadPool.shutdownNow();
 	}
 	
@@ -190,7 +218,7 @@ public class peerProcess implements Runnable{
 			socket = neighborInfo[i].getUploadSocket();
 			input = socket.getInputStream();
 			output = socket.getOutputStream();
-			
+			//Clients are already receiving these handshakes for you
 			receivedHandshake.receiveMessage(socket);
 			
 			if(handshakeValid(receivedHandshake, index))
@@ -202,6 +230,7 @@ public class peerProcess implements Runnable{
 				++i;
 			}
 		}
+		//After bitfield and handshake messages, send the interested and not interested messages
 	}
 	
 	public void setOthersInitialization(int neighborIndex, int peerIndex, String host, int downloadPort, int uploadPort, int havePort )throws UnknownHostException, IOException
@@ -228,7 +257,7 @@ public class peerProcess implements Runnable{
 		boolean flag = true;
 		
 		byte[] bits;
-		
+		//You just need to receive/send handshake messages and then prepare to send/receive bitfields
 		if(neighborIndex < peerIndex)
 		{			
 			hs.setPeerID(peerIndex);
@@ -261,9 +290,10 @@ public class peerProcess implements Runnable{
 				}
 			}
 		}
+		//After bitfield and handshake messages, send the interested and not interested messages
 	}
 	//You can verify from the peerId of the client peer after receiving the message.
-	//This function is not necessary
+	//This function may or may not be necessary
 	public boolean handshakeValid(HandshakeMessage hs, int peerIndex)
 	{
 		boolean valid = false;
