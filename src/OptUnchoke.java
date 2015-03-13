@@ -7,9 +7,9 @@ import java.util.*;
 import java.util.concurrent.Callable;
 
 /**
- * The OptUnchoke class is used in the OptUnchokeTimer.  It 
- * updates the optimistically unchoked peer.
- *
+ * The OptUnchoke class is used to update the optimistically unchoked peer.
+ * It also sends pieces and receives request to/from peer
+ * 
  *@author Abhishek and Anupam
  *
  */

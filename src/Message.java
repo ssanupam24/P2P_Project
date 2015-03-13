@@ -1,5 +1,6 @@
 /*
  * @author Anupam
+ * This class creates, send and receives messages through different streams
  */
 import java.io.*;
 import java.net.*;

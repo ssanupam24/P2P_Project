@@ -1,5 +1,7 @@
 /*
  *@author Gloria 
+ * This class is used to read the Peer Config and Common Config file and store the information in 
+ * respective member variables
  */
 
 import java.io.FileNotFoundException;

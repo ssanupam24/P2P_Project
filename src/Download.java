@@ -5,7 +5,7 @@ import java.net.Socket;
 import java.util.concurrent.Callable;
 
 /*
- * This class is a callable that is used for downloading a piece
+ * This class is a callable that is used for downloading a piece. It is used by each client peer
  * @author Anupam
  */
 public class Download implements Callable<Object> {

@@ -7,7 +7,7 @@ import java.util.Date;
 
 /*
  * @author Abhishek
- * 
+ * A customized logger for the BitTorrrent client project to log entries according to the operations
  */
 public class LoggerPeer 
 {

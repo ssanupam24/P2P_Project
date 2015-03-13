@@ -4,7 +4,7 @@ import java.net.Socket;
 
 /**
  * @author Abhishek
- *
+ * This class is used to create, send and receive handshake messages through sockets
  */
  
 public class HandshakeMessage {

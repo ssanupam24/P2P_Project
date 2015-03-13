@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
  *@author Anupam
  *
  */
-//How can we put this in a callable object since this has to be run parallely
+
 public class HaveMessage implements Callable<Object> {
 
 	private int peerId;

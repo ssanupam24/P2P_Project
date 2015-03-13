@@ -70,10 +70,9 @@ public class peerProcess implements Runnable{
 		int downloadPort;
 		int uploadPort;
 		int havePort;
-		
+		//Need to initialize the neighbor info array and totalNeighbors in the constructor
 		int totalPeers = peerConfigs.getTotalPeers();
 		totalNeighbors = totalPeers-1;
-		
 		neighborInfo = new NeighborInfo[totalPeers];
 		
 		// Iterate through all peers in the peerConfigs object
@@ -183,7 +182,8 @@ public class peerProcess implements Runnable{
 			while(flag)
 			{		
 				receivedHandshake.receiveMessage(uploadClientSocket);
-				
+				//If handshaking fails for some reason, I guess this loop will continue execution
+				//and we won't be able to start a new handshaking with any other peer.
 				if(receivedHandshake.getPeerID() == neighborIndex)
 				{
 					m.setType(Message.bitfield);
@@ -194,7 +194,7 @@ public class peerProcess implements Runnable{
 			}	
 			
 			flag = true;
-			
+			//Again, same concern as mentioned above
 			while(flag)
 			{
 				m.receiveMessage(input);
