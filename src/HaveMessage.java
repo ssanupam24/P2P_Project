@@ -32,7 +32,7 @@ public class HaveMessage implements Callable<Object> {
 		this.logger = logger;
 		this.neighborArray = neighborArray;
 		m = new Message();
-		sock = selfInfo.getControlSocket();
+		sock = selfInfo.getHaveSocket();
 		input = sock.getInputStream();
 		output = sock.getOutputStream();
 	}

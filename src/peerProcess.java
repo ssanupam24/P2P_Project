@@ -38,6 +38,9 @@ public class peerProcess implements Runnable{
 	private PeerConfigs peerConfigs;
 	private NeighborInfo[] neighborInfo;
 	private int totalNeighbors;
+	ServerSocket uploadServerSocket;
+	ServerSocket downloadServerSocket;
+	ServerSocket haveServerSocket;
 	
 	public peerProcess(int peerID) throws IOException
 	{
@@ -46,6 +49,7 @@ public class peerProcess implements Runnable{
 		filePointer = new HandleFile(peer_id, peerConfigs);
 		log = new LoggerPeer(peer_id);
 		bitfield = new BitField(peerConfigs.getTotalPieces()); 
+		neighborInfo = new NeighborInfo[peerConfigs.getTotalPeers()];
 		optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
 		unchokeInterval = peerConfigs.getTimeUnchoke();
 	}
@@ -77,9 +81,30 @@ public class peerProcess implements Runnable{
 			unchokerProcess();
 			//Now check all the future objects and shut down threads if done with 
 			//receiving and sending all the pieces
-			//TODO: For Anupam>> Complete this ASAP
+			optFuture.get();
+			for(int j = 0; j < neighborInfo.length; j++){
+				downList.get(j).get();
+				haveList.get(j).get();
+			}
+			log.completeDownloadLog();
+			downloadPool.shutdown();
+			havePool.shutdown();
+			optThread.shutdown();
 			//Hopefully all the tasks are completed successfully and the control reaches here, 
 			//now its celebration time :)
+			for(int j = 0; j < neighborInfo.length; j++){
+				//Close all the sockets
+				if(neighborInfo[j].getPeerId() == peer_id) {
+					uploadServerSocket.close();
+					downloadServerSocket.close();
+					haveServerSocket.close();
+				}
+				else{
+					neighborInfo[j].getHaveSocket().close();
+					neighborInfo[j].getDownloadSocket().close();
+					neighborInfo[j].getUploadSocket().close();
+				}
+			}
 			
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -117,7 +142,7 @@ public class peerProcess implements Runnable{
 			//Check all the download rate and select preferred neighbors
 			for(int i = 0; i < neighborInfo.length; i++){
 				if(neighborInfo[i].getPeerId() != peer_id && neighborInfo[i].getBitField().checkPiecesInterested(bitfield)){
-					prefNeighborList.put(neighborInfo[i].getAmountOfDownload(), i);
+					prefNeighborList.put(neighborInfo[i].getdownloadRate(), i);
 				}
 			}
 			Set set = prefNeighborList.entrySet();
@@ -167,7 +192,6 @@ public class peerProcess implements Runnable{
 		//Need to initialize the neighbor info array and totalNeighbors in the constructor
 		int totalPeers = peerConfigs.getTotalPeers();
 		totalNeighbors = totalPeers-1;
-		neighborInfo = new NeighborInfo[totalPeers];
 		
 		// Iterate through all peers in the peerConfigs object
 		for(int i = 0; i < totalPeers; ++i)
@@ -177,7 +201,7 @@ public class peerProcess implements Runnable{
 			downloadPort = peerConfigs.getDownloadPortList(i);
 			uploadPort = peerConfigs.getUploadPortList(i);
 			havePort = peerConfigs.getHavePortList(i);
-			
+			//The below statement is correct, please don't delete it
 			neighborInfo[i] = new NeighborInfo(currPeerID, totalPieces);
 			
 			if(peerConfigs.getHasWholeFile(i))
@@ -193,9 +217,9 @@ public class peerProcess implements Runnable{
 				if(peerConfigs.getHasWholeFile(i))
 					bitfield.setAllBitsTrue();
 				
-				ServerSocket uploadServerSocket = new ServerSocket(uploadPort);
-				ServerSocket downloadServerSocket = new ServerSocket(downloadPort);
-				ServerSocket haveServerSocket = new ServerSocket(havePort);
+				uploadServerSocket = new ServerSocket(uploadPort);
+				downloadServerSocket = new ServerSocket(downloadPort);
+				haveServerSocket = new ServerSocket(havePort);
 				
 				setSelfInitialization(uploadServerSocket, downloadServerSocket, haveServerSocket, peerIndex); // sets up server sockets
 			}
@@ -213,7 +237,7 @@ public class peerProcess implements Runnable{
 	
 		neighborInfo[index].setUploadSocket(uploadSocket);
 		neighborInfo[index].setDownloadSocket(downloadSocket);
-		neighborInfo[index].setControlSocket(haveSocket);
+		neighborInfo[index].setHaveSocket(haveSocket);
 		
 		Socket socket;
 		InputStream input;
@@ -257,7 +281,7 @@ public class peerProcess implements Runnable{
 		// put client sockets in the neighborInfo array
 		neighborInfo[neighborIndex].setDownloadSocket(downloadClientSocket);
 		neighborInfo[neighborIndex].setUploadSocket(uploadClientSocket);
-		neighborInfo[neighborIndex].setControlSocket(haveClientSocket);
+		neighborInfo[neighborIndex].setHaveSocket(haveClientSocket);
 
 		input = uploadClientSocket.getInputStream();
 		output = uploadClientSocket.getOutputStream();

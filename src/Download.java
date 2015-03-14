@@ -72,13 +72,13 @@ public class Download implements Callable<Object> {
 								Piece p = new Piece(m.getPayload(), pieceIndex);
 								file.writeFile(p);
 								bits.setBitToTrue(pieceIndex);
-								selfInfo.incAmountOfDownload();
-								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, selfInfo.getAmountOfDownload());
+								selfInfo.incdownloadRate();
+								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, selfInfo.getdownloadRate());
 								//Create a have message and send it to all peers
 								m.setType(Message.have);
 								m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));
 								for(int i = 0; i < neighborArray.length; i++)
-									m.sendMessage(neighborArray[i].getControlSocket().getOutputStream());
+									m.sendMessage(neighborArray[i].getHaveSocket().getOutputStream());
 							}
 						}
 					}

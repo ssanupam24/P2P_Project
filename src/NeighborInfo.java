@@ -14,8 +14,8 @@ public class NeighborInfo {
 	private BitField bitField;
 	private Socket uploadSocket;
 	private Socket downloadSocket;
-	private Socket controlSocket;
-	private int amountOfDownload;
+	private Socket haveSocket;
+	private int downloadRate;
 	
 	public NeighborInfo(int peerID, int numPieces) throws UnknownHostException, IOException
 	{
@@ -43,20 +43,20 @@ public class NeighborInfo {
 	public Socket getDownloadSocket(){
 		return downloadSocket;
 	}
-	public Socket getControlSocket(){
-		return controlSocket;
+	public Socket getHaveSocket(){
+		return haveSocket;
 	}
-	public int getAmountOfDownload(){		
-		return amountOfDownload;		
+	public int getdownloadRate(){		
+		return downloadRate;		
 	}		
 	public void resetDownload(){		
-		amountOfDownload = 0;		
+		downloadRate = 0;		
 	}
 	public void setDownloadAmount(int amount){		
-		amountOfDownload = amount;		
+		downloadRate = amount;		
 	}
-	public int incAmountOfDownload(){		
-		return amountOfDownload++;		
+	public int incdownloadRate(){		
+		return downloadRate++;		
 	}
 	public void setNeighborChoked(){
 		neighborChokedState.set(0);
@@ -88,8 +88,8 @@ public class NeighborInfo {
 	public void setDownloadSocket(Socket socket){
 		downloadSocket = socket;
 	}
-	public void setControlSocket(Socket socket){
-		controlSocket = socket;
+	public void setHaveSocket(Socket socket){
+		haveSocket = socket;
 	}
 	public Boolean hasFinished(){
 		return bitField.getFinished();
