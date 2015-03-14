@@ -70,10 +70,17 @@ public class peerProcess implements Runnable{
 			for(int j = 0; j < neighborInfo.length; j++){
 				
 				NeighborInfo rec = neighborInfo[j];
-				Future<Object> downFuture = downloadPool.submit(new Download(peer_id, neighborInfo, rec, bitfield, filePointer, log));
-				downList.add(downFuture);
-				Future<Object> haveFuture = havePool.submit(new HaveMessage(peer_id, rec, log, neighborInfo));
-				haveList.add(haveFuture);
+				//You don't have to submit a download and have thread for yourself
+				if(rec.getPeerId() != peer_id) {
+					Future<Object> downFuture = downloadPool
+							.submit(new Download(peer_id, neighborInfo, rec,
+									bitfield, filePointer, log));
+					downList.add(downFuture);
+					Future<Object> haveFuture = havePool
+							.submit(new HaveMessage(peer_id, rec, log,
+									neighborInfo));
+					haveList.add(haveFuture);
+				}
 				
 			}
 			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
@@ -83,8 +90,10 @@ public class peerProcess implements Runnable{
 			//receiving and sending all the pieces
 			optFuture.get();
 			for(int j = 0; j < neighborInfo.length; j++){
-				downList.get(j).get();
-				haveList.get(j).get();
+				if(neighborInfo[j].getPeerId() != peer_id){
+					downList.get(j).get();
+					haveList.get(j).get();
+				}
 			}
 			log.completeDownloadLog();
 			downloadPool.shutdown();
