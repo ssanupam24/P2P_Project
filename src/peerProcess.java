@@ -34,6 +34,7 @@ public class peerProcess implements Runnable{
 	private static int peer_id;
 	private BitField bitfield;
 	private static LoggerPeer log;
+	private NeighborInfo selfInfo;
 	private HandleFile filePointer;
 	private PeerConfigs peerConfigs;
 	private NeighborInfo[] neighborInfo;
@@ -49,15 +50,16 @@ public class peerProcess implements Runnable{
 		filePointer = new HandleFile(peer_id, peerConfigs);
 		log = new LoggerPeer(peer_id);
 		bitfield = new BitField(peerConfigs.getTotalPieces()); 
-		neighborInfo = new NeighborInfo[peerConfigs.getTotalPeers()];
+		neighborInfo = new NeighborInfo[peerConfigs.getTotalPeers()-1];
 		optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
 		unchokeInterval = peerConfigs.getTimeUnchoke();
+		
+		setupNeighborAndSelfInfo();
 	}
 	
 	public void run()
 	{
 		try {
-			setupNeighborAndSelfInfo();
 			//The doomsday thread starts now. Good Luck!!!
 			ArrayList<Future<Object>> downList = new ArrayList<Future<Object>>();
 			ArrayList<Future<Object>> haveList = new ArrayList<Future<Object>>();
@@ -107,6 +109,10 @@ public class peerProcess implements Runnable{
 					uploadServerSocket.close();
 					downloadServerSocket.close();
 					haveServerSocket.close();
+					
+					selfInfo.getHaveSocket().close();
+					selfInfo.getDownloadSocket().close();
+					selfInfo.getUploadSocket().close();	
 				}
 				else{
 					neighborInfo[j].getHaveSocket().close();
@@ -202,29 +208,38 @@ public class peerProcess implements Runnable{
 		int totalPeers = peerConfigs.getTotalPeers();
 		totalNeighbors = totalPeers-1;
 		
+		// might not need below logic for getting the peerIndex
+		for(int i = 0; i < totalNeighbors; ++i)
+			if(peerConfigs.getPeerList(i) == peer_id)
+				peerIndex = i;
+		
 		// Iterate through all peers in the peerConfigs object
-		for(int i = 0; i < totalPeers; ++i)
+		for(int i = 0; i < totalNeighbors; ++i)
 		{
 			currPeerID = peerConfigs.getPeerList(i);
 			host = peerConfigs.getHostList(i);
 			downloadPort = peerConfigs.getDownloadPortList(i);
 			uploadPort = peerConfigs.getUploadPortList(i);
 			havePort = peerConfigs.getHavePortList(i);
-			//The below statement is correct, please don't delete it
-			neighborInfo[i] = new NeighborInfo(currPeerID, totalPieces);
-			
-			if(peerConfigs.getHasWholeFile(i))
-				neighborInfo[i].getBitField().setAllBitsTrue();	
 			
 			// If a neighbor, populate neighbor information and set up client sockets
 			if(currPeerID != peer_id)
-			{					
+			{	
+				neighborInfo[i] = new NeighborInfo(totalPieces);
+				neighborInfo[i].setPeerID(currPeerID);
+				
+				if(peerConfigs.getHasWholeFile(i))
+					neighborInfo[i].getBitField().setAllBitsTrue();	
+				
 				setOthersInitialization(i, peerIndex, host, downloadPort, uploadPort, havePort); // sets up client sockets
 			}
 			else // If self, set up BitField and server sockets
 			{
 				if(peerConfigs.getHasWholeFile(i))
 					bitfield.setAllBitsTrue();
+				
+				selfInfo = new NeighborInfo(totalPieces);
+				selfInfo.setPeerID(peer_id);
 				
 				uploadServerSocket = new ServerSocket(uploadPort);
 				downloadServerSocket = new ServerSocket(downloadPort);
@@ -239,14 +254,15 @@ public class peerProcess implements Runnable{
 	public void setSelfInitialization(ServerSocket uploadServerSocket, 
 			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws IOException
 	{
-		// set up sockets to access the server sockets' I/O streams
+		// Sets up sockets to access the server sockets' I/O streams
 		Socket uploadSocket = uploadServerSocket.accept();
 		Socket downloadSocket = downloadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
 	
-		neighborInfo[index].setUploadSocket(uploadSocket);
-		neighborInfo[index].setDownloadSocket(downloadSocket);
-		neighborInfo[index].setHaveSocket(haveSocket);
+		// Put the sockets in the selfInfo object
+		selfInfo.setUploadSocket(uploadSocket);
+		selfInfo.setDownloadSocket(downloadSocket);
+		selfInfo.setHaveSocket(haveSocket);
 		
 		Socket socket;
 		InputStream input;
@@ -274,11 +290,13 @@ public class peerProcess implements Runnable{
 				++i;
 			}
 		}
+		//Need to process received bitfields & change corresponding bfs in array
 		//After bitfield and handshake messages, send the interested and not interested messages
 	}
 	
 	public void setOthersInitialization(int neighborIndex, int peerIndex, String host, int downloadPort, int uploadPort, int havePort )throws UnknownHostException, IOException
 	{
+		int neighborID = neighborInfo[neighborIndex].getPeerId();
 		InputStream input;
 		OutputStream output;
 		
@@ -292,66 +310,72 @@ public class peerProcess implements Runnable{
 		neighborInfo[neighborIndex].setUploadSocket(uploadClientSocket);
 		neighborInfo[neighborIndex].setHaveSocket(haveClientSocket);
 
-		input = uploadClientSocket.getInputStream();
 		output = uploadClientSocket.getOutputStream();
 		
 		HandshakeMessage hs = new HandshakeMessage();
-		HandshakeMessage receivedHandshake = new HandshakeMessage();
+		// HandshakeMessage receivedHandshake = new HandshakeMessage();
 		Message m = new Message();
-		boolean flag = true;
-		
-		byte[] bits;
+	
+
 		//You just need to receive/send handshake messages and then prepare to send/receive bitfields
-		if(neighborIndex < peerIndex)
-		{			
-			hs.setPeerID(peerIndex);
-			hs.sendMessage(uploadClientSocket);
+	
+		hs.setPeerID(peerIndex);
+		hs.sendMessage(uploadClientSocket);
 			
-			while(flag)
-			{		
-				receivedHandshake.receiveMessage(uploadClientSocket);
-				//If handshaking fails for some reason, I guess this loop will continue execution
-				//and we won't be able to start a new handshaking with any other peer.
-				if(receivedHandshake.getPeerID() == neighborIndex)
-				{
-					m.setType(Message.bitfield);
-					m.setPayload(neighborInfo[peerIndex].getBitField().changeBitToByteField());
-					m.sendMessage(output);
-					flag = false;
-				}
-			}	
-			
-			flag = true;
-			//Again, same concern as mentioned above
-			while(flag)
+		hs.receiveMessage(selfInfo.getUploadSocket());
+		
+		// does not handle the case where the handshake is invalid or does not come
+		if(handshakeValid(hs, neighborID))
+		{
+			m.setType(Message.bitfield);
+			m.setPayload(bitfield.changeBitToByteField());
+			m.sendMessage(output);
+		}
+		
+		m.receiveMessage(selfInfo.getUploadSocket().getInputStream());
+		
+		if(m.getType() == Message.interested)
+		{
+			/*
+			neighborInfo[neighborIndex].setBitField(m.getPayload());
+			if(bitfield.checkPiecesInterested(neighborInfo[neighborIndex].getBitField())) // if interested
 			{
-				m.receiveMessage(input);
-				if(m.getType() == Message.bitfield)
-				{
-					bits = m.getPayload();
-					neighborInfo[neighborIndex].setBitField(bits);		
-					flag = false;
-				}
+				m.setType(Message.interested);
+				m.setPayload(null);
+				m.sendMessage(output);
+			}
+			*/
+		}
+		else if(m.getType() == Message.interested)
+		{
+			
+		}
+		
+		m.receiveMessage(selfInfo.getUploadSocket().getInputStream());
+		
+		if(m.getType() == Message.bitfield)
+		{
+			neighborInfo[neighborIndex].setBitField(m.getPayload());
+			if(bitfield.checkPiecesInterested(neighborInfo[neighborIndex].getBitField())) // if interested
+			{
+				m.setType(Message.interested);
+				m.setPayload(null);
+				m.sendMessage(output);
 			}
 		}
+		
 		//After bitfield and handshake messages, send the interested and not interested messages
 	}
 	//You can verify from the peerId of the client peer after receiving the message.
 	//This function may or may not be necessary
-	public boolean handshakeValid(HandshakeMessage hs, int peerIndex)
+	public boolean handshakeValid(HandshakeMessage hs, int neighborID)
 	{
-		boolean valid = false;
-		int peerId = hs.getPeerID();
+		int peerID = hs.getPeerID();
 		
-		// see if the peerId is one of the neighbors before this peer in the list
-		for(int i = 0; i < peerIndex; ++i)
-			if(neighborInfo[i].getPeerId() == peerId)
-				valid = true;
-		
-		if(!hs.getHandshakeHeader().equals("P2PFILESHARINGPROJ"))
-			valid = false;
-		
-		return valid;
+		if(hs.getPeerID() == neighborID && hs.getHandshakeHeader().equals("P2PFILESHARINGPROJ"))
+			return true;
+		else
+			return false;		
 	}
 	
 	public static void main(String [] args) throws NumberFormatException, IOException
