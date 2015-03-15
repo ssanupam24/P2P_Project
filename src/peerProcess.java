@@ -231,7 +231,7 @@ public class peerProcess implements Runnable{
 				if(peerConfigs.getHasWholeFile(i))
 					neighborInfo[i].getBitField().setAllBitsTrue();	
 				
-				setOthersInitialization(i, peerIndex, host, downloadPort, uploadPort, havePort); // sets up client sockets
+				setOthersInitialization(neighborInfo[i], i, peerIndex, host, downloadPort, uploadPort, havePort); // sets up client sockets
 			}
 			else // If self, set up BitField and server sockets
 			{
@@ -250,7 +250,6 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	// left off here... need to fix handshaking/bitfield thing
 	public void setSelfInitialization(ServerSocket uploadServerSocket, 
 			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws IOException
 	{
@@ -264,39 +263,68 @@ public class peerProcess implements Runnable{
 		selfInfo.setDownloadSocket(downloadSocket);
 		selfInfo.setHaveSocket(haveSocket);
 		
-		Socket socket;
-		InputStream input;
-		OutputStream output;
+		InputStream input = downloadSocket.getInputStream();
+		OutputStream output = downloadSocket.getOutputStream();
+		
 		int numHandshakesExpected = peerConfigs.getTotalPeers() - index - 1;
 		
-		HandshakeMessage receivedHandshake = new HandshakeMessage();	
+		HandshakeMessage hs = new HandshakeMessage();	
 		Message m = new Message();
+		int currPeerID;
 		
 		int i = 0;
 		while(i < numHandshakesExpected)
-		{
-			socket = neighborInfo[i].getUploadSocket();
-			input = socket.getInputStream();
-			output = socket.getOutputStream();
-			//Clients are already receiving these handshakes for you
-			receivedHandshake.receiveMessage(socket);
+		{			
+			// Receive handshake message
+			hs.receiveMessage(downloadSocket);
+			currPeerID = hs.getPeerID();
 			
-			if(handshakeValid(receivedHandshake, index))
+			// Send handshake message in response
+			hs.setPeerID(peer_id);
+			hs.sendMessage(downloadSocket);
+		
+			int numNeighbors = peerConfigs.getTotalPeers()-1;
+			int x;
+			
+			// if a bitfield message is received, update the bitfield of the peer it came from in the neighborInfo array
+			m.receiveMessage(input);
+			if(m.getType() == Message.bitfield)
 			{
+				for(x = 0; x < numNeighbors; ++x)
+				{
+					if(neighborInfo[x].getPeerId() == currPeerID)
+					{
+						neighborInfo[x].setBitField(m.getPayload());
+						break;
+					}
+				}
+				
+				// Send bitfield in response
 				m.setType(Message.bitfield);
 				m.setPayload(bitfield.changeBitToByteField());
 				m.sendMessage(output);
 				
-				++i;
+				// Send an interested or notInterested message depending on the received bitfield contents.
+				if(bitfield.checkPiecesInterested(neighborInfo[x].getBitField()))
+				{
+					m.setType(Message.interested);
+					m.setPayload(null);
+					m.sendMessage(output);
+				}
+				else
+				{
+					m.setType(Message.notInterested);
+					m.setPayload(null);
+					m.sendMessage(output);					
+				}
 			}
+			++i;
 		}
-		//Need to process received bitfields & change corresponding bfs in array
-		//After bitfield and handshake messages, send the interested and not interested messages
 	}
 	
-	public void setOthersInitialization(int neighborIndex, int peerIndex, String host, int downloadPort, int uploadPort, int havePort )throws UnknownHostException, IOException
+	public void setOthersInitialization(NeighborInfo otherInfo, int neighborIndex, int peerIndex, String host, int downloadPort, int uploadPort, int havePort)throws UnknownHostException, IOException
 	{
-		int neighborID = neighborInfo[neighborIndex].getPeerId();
+		int neighborID = otherInfo.getPeerId();
 		InputStream input;
 		OutputStream output;
 		
@@ -306,68 +334,58 @@ public class peerProcess implements Runnable{
 		Socket haveClientSocket = new Socket(host, havePort);
 	
 		// put client sockets in the neighborInfo array
-		neighborInfo[neighborIndex].setDownloadSocket(downloadClientSocket);
-		neighborInfo[neighborIndex].setUploadSocket(uploadClientSocket);
-		neighborInfo[neighborIndex].setHaveSocket(haveClientSocket);
+		otherInfo.setDownloadSocket(downloadClientSocket);
+		otherInfo.setUploadSocket(uploadClientSocket);
+		otherInfo.setHaveSocket(haveClientSocket);
 
 		output = uploadClientSocket.getOutputStream();
-		
-		HandshakeMessage hs = new HandshakeMessage();
-		// HandshakeMessage receivedHandshake = new HandshakeMessage();
-		Message m = new Message();
-	
+		input = uploadClientSocket.getInputStream();
 
-		//You just need to receive/send handshake messages and then prepare to send/receive bitfields
-	
-		hs.setPeerID(peerIndex);
-		hs.sendMessage(uploadClientSocket);
-			
-		hs.receiveMessage(selfInfo.getUploadSocket());
-		
-		// does not handle the case where the handshake is invalid or does not come
-		if(handshakeValid(hs, neighborID))
+		// If the neighbor is before the peer in the PeerInfo configuration file, 
+		// the peer initiates the handshake process
+		if(neighborIndex < peerIndex)
 		{
+			HandshakeMessage hs = new HandshakeMessage();
+			hs.setPeerID(peer_id);
+			hs.sendMessage(uploadClientSocket);
+			
+			// Receive handshake from neighber and check whether it is valid
+			hs.receiveMessage(uploadClientSocket);
+			if(!handshakeValid(hs, neighborID))
+			{
+				System.out.printf("\nError:  Peer %d received an invalid handshake message from peer %d\n", peer_id, hs.getPeerID());
+				System.exit(1);
+			}
+
+			// Sent bitfield message
+			Message m = new Message();
 			m.setType(Message.bitfield);
 			m.setPayload(bitfield.changeBitToByteField());
 			m.sendMessage(output);
-		}
-		
-		m.receiveMessage(selfInfo.getUploadSocket().getInputStream());
-		
-		if(m.getType() == Message.interested)
-		{
-			/*
-			neighborInfo[neighborIndex].setBitField(m.getPayload());
-			if(bitfield.checkPiecesInterested(neighborInfo[neighborIndex].getBitField())) // if interested
-			{
-				m.setType(Message.interested);
-				m.setPayload(null);
-				m.sendMessage(output);
-			}
-			*/
-		}
-		else if(m.getType() == Message.interested)
-		{
 			
-		}
-		
-		m.receiveMessage(selfInfo.getUploadSocket().getInputStream());
-		
-		if(m.getType() == Message.bitfield)
-		{
-			neighborInfo[neighborIndex].setBitField(m.getPayload());
-			if(bitfield.checkPiecesInterested(neighborInfo[neighborIndex].getBitField())) // if interested
+			// Receive bitfield
+			m.receiveMessage(input);
+			if(m.getType() == Message.bitfield)
 			{
-				m.setType(Message.interested);
-				m.setPayload(null);
-				m.sendMessage(output);
+				otherInfo.setBitField(m.getPayload());
+				
+				// Send an interested or notInterested message depending on the received bitfield contents.
+				if(bitfield.checkPiecesInterested(otherInfo.getBitField()))
+				{
+					m.setType(Message.interested);
+					m.setPayload(null);
+					m.sendMessage(output);
+				}
+				else
+				{
+					m.setType(Message.notInterested);
+					m.setPayload(null);
+					m.sendMessage(output);					
+				}
 			}
 		}
-		
-		//After bitfield and handshake messages, send the interested and not interested messages
 	}
-	//You can verify from the peerId of the client peer after receiving the message.
-	//This function may or may not be necessary
+
 	public boolean handshakeValid(HandshakeMessage hs, int neighborID)
 	{
 		int peerID = hs.getPeerID();
