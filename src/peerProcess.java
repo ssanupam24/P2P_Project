@@ -65,7 +65,7 @@ public class peerProcess implements Runnable{
 				fullFile = true;
 			}
 		}
-		setupNeighborAndSelfInfo();
+		
 		try {
 			setupNeighborAndSelfInfo();
 			//The doomsday thread starts now. Good Luck!!!
@@ -241,7 +241,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setupNeighborAndSelfInfo() throws UnknownHostException, IOException
+	public void setupNeighborAndSelfInfo() throws Exception
 	{
 		int currPeerID;
 		int peerIndex = 0;  // index of the peer initializing the NeighborInfo array
@@ -253,11 +253,6 @@ public class peerProcess implements Runnable{
 		//Need to initialize the neighbor info array and totalNeighbors in the constructor
 		int totalPeers = peerConfigs.getTotalPeers();
 		totalNeighbors = totalPeers-1;
-		
-		// might not need below logic for getting the peerIndex
-		for(int i = 0; i < totalNeighbors; ++i)
-			if(peerConfigs.getPeerList(i) == peer_id)
-				peerIndex = i;
 		
 		// Iterate through all peers in the peerConfigs object
 		for(int i = 0; i < totalNeighbors; ++i)
