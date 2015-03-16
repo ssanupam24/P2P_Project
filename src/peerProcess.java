@@ -57,6 +57,7 @@ public class peerProcess implements Runnable{
 		
 	}
 	
+	// overriding run() function
 	public void run()
 	{
 		//Finished flag setup after checking the whole file value from bitfield
