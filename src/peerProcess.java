@@ -54,11 +54,11 @@ public class peerProcess implements Runnable{
 		optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
 		unchokeInterval = peerConfigs.getTimeUnchoke();
 		
-		setupNeighborAndSelfInfo();
 	}
 	
 	public void run()
 	{
+		setupNeighborAndSelfInfo();
 		try {
 			//The doomsday thread starts now. Good Luck!!!
 			ArrayList<Future<Object>> downList = new ArrayList<Future<Object>>();
