@@ -34,7 +34,6 @@ public class peerProcess implements Runnable{
 	private static int peer_id;
 	private BitField bitfield;
 	private static LoggerPeer log;
-	private NeighborInfo selfInfo;
 	private HandleFile filePointer;
 	private PeerConfigs peerConfigs;
 	private NeighborInfo[] neighborInfo;
@@ -50,7 +49,7 @@ public class peerProcess implements Runnable{
 		filePointer = new HandleFile(peer_id, peerConfigs);
 		log = new LoggerPeer(peer_id);
 		bitfield = new BitField(peerConfigs.getTotalPieces()); 
-		neighborInfo = new NeighborInfo[peerConfigs.getTotalPeers()-1];
+		neighborInfo = new NeighborInfo[peerConfigs.getTotalPeers()];
 		optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
 		unchokeInterval = peerConfigs.getTimeUnchoke();
 		
@@ -58,8 +57,8 @@ public class peerProcess implements Runnable{
 	
 	public void run()
 	{
-		setupNeighborAndSelfInfo();
 		try {
+			setupNeighborAndSelfInfo();
 			//The doomsday thread starts now. Good Luck!!!
 			ArrayList<Future<Object>> downList = new ArrayList<Future<Object>>();
 			ArrayList<Future<Object>> haveList = new ArrayList<Future<Object>>();
@@ -110,9 +109,9 @@ public class peerProcess implements Runnable{
 					downloadServerSocket.close();
 					haveServerSocket.close();
 					
-					selfInfo.getHaveSocket().close();
-					selfInfo.getDownloadSocket().close();
-					selfInfo.getUploadSocket().close();	
+					neighborInfo[j].getHaveSocket().close();
+					neighborInfo[j].getDownloadSocket().close();
+					neighborInfo[j].getUploadSocket().close();	
 				}
 				else{
 					neighborInfo[j].getHaveSocket().close();
@@ -130,6 +129,10 @@ public class peerProcess implements Runnable{
 			e.printStackTrace();
 		} catch (ExecutionException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (Exception e)
+		{
 			e.printStackTrace();
 		}
 		printNeighborInfo();	
@@ -195,7 +198,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setupNeighborAndSelfInfo() throws UnknownHostException, IOException
+	public void setupNeighborAndSelfInfo() throws Exception
 	{
 		int currPeerID;
 		int peerIndex = 0;  // index of the peer initializing the NeighborInfo array
@@ -207,11 +210,6 @@ public class peerProcess implements Runnable{
 		//Need to initialize the neighbor info array and totalNeighbors in the constructor
 		int totalPeers = peerConfigs.getTotalPeers();
 		totalNeighbors = totalPeers-1;
-		
-		// might not need below logic for getting the peerIndex
-		for(int i = 0; i < totalNeighbors; ++i)
-			if(peerConfigs.getPeerList(i) == peer_id)
-				peerIndex = i;
 		
 		// Iterate through all peers in the peerConfigs object
 		for(int i = 0; i < totalNeighbors; ++i)
@@ -235,90 +233,84 @@ public class peerProcess implements Runnable{
 			}
 			else // If self, set up BitField and server sockets
 			{
+				peerIndex = i;
+				
 				if(peerConfigs.getHasWholeFile(i))
 					bitfield.setAllBitsTrue();
 				
-				selfInfo = new NeighborInfo(totalPieces);
-				selfInfo.setPeerID(peer_id);
+				neighborInfo[i] = new NeighborInfo(totalPieces);
+				neighborInfo[i].setPeerID(peer_id);
 				
 				uploadServerSocket = new ServerSocket(uploadPort);
 				downloadServerSocket = new ServerSocket(downloadPort);
 				haveServerSocket = new ServerSocket(havePort);
 				
-				setSelfInitialization(uploadServerSocket, downloadServerSocket, haveServerSocket, peerIndex); // sets up server sockets
+				break;
 			}
+		}
+		
+		for(int i = peerIndex; i < totalNeighbors; ++i)
+		{
+			setSelfInitialization(uploadServerSocket, downloadServerSocket, haveServerSocket, i); 
 		}
 	}
 	
 	public void setSelfInitialization(ServerSocket uploadServerSocket, 
-			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws IOException
+			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws Exception
 	{
 		// Sets up sockets to access the server sockets' I/O streams
 		Socket uploadSocket = uploadServerSocket.accept();
 		Socket downloadSocket = downloadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
 	
-		// Put the sockets in the selfInfo object
-		selfInfo.setUploadSocket(uploadSocket);
-		selfInfo.setDownloadSocket(downloadSocket);
-		selfInfo.setHaveSocket(haveSocket);
+		// Put the sockets in the neighborInfo object
+		neighborInfo[index].setUploadSocket(uploadSocket);
+		neighborInfo[index].setDownloadSocket(downloadSocket);
+		neighborInfo[index].setHaveSocket(haveSocket);
 		
 		InputStream input = downloadSocket.getInputStream();
 		OutputStream output = downloadSocket.getOutputStream();
-		
-		int numHandshakesExpected = peerConfigs.getTotalPeers() - index - 1;
 		
 		HandshakeMessage hs = new HandshakeMessage();	
 		Message m = new Message();
 		int currPeerID;
 		
-		int i = 0;
-		while(i < numHandshakesExpected)
-		{			
-			// Receive handshake message
-			hs.receiveMessage(downloadSocket);
-			currPeerID = hs.getPeerID();
+		// Receive handshake message
+		hs.receiveMessage(downloadSocket);
+		currPeerID = peerConfigs.getPeerList(index);
 			
-			// Send handshake message in response
-			hs.setPeerID(peer_id);
-			hs.sendMessage(downloadSocket);
-		
-			int numNeighbors = peerConfigs.getTotalPeers()-1;
-			int x;
+		if(!handshakeValid(hs, currPeerID))
+		{
+			throw new Exception("Error:  Invalid handshake message received from peer " + currPeerID);
+		}
 			
-			// if a bitfield message is received, update the bitfield of the peer it came from in the neighborInfo array
-			m.receiveMessage(input);
-			if(m.getType() == Message.bitfield)
-			{
-				for(x = 0; x < numNeighbors; ++x)
-				{
-					if(neighborInfo[x].getPeerId() == currPeerID)
-					{
-						neighborInfo[x].setBitField(m.getPayload());
-						break;
-					}
-				}
-				
-				// Send bitfield in response
-				m.setType(Message.bitfield);
-				m.setPayload(bitfield.changeBitToByteField());
+		// Send handshake message in response
+		hs.setPeerID(peer_id);
+		hs.sendMessage(downloadSocket);
+
+		// if a bitfield message is received, update the bitfield of the peer it
+		// came from in the neighborInfo array
+		m.receiveMessage(input);
+		if (m.getType() == Message.bitfield) 
+		{
+			neighborInfo[index].setBitField(m.getPayload());
+
+			// Send bitfield in response
+			m.setType(Message.bitfield);
+			m.setPayload(bitfield.changeBitToByteField());
+			m.sendMessage(output);
+
+			// Send an interested or notInterested message depending on the
+			// received bitfield contents.
+			if (bitfield.checkPiecesInterested(neighborInfo[index].getBitField())) {
+				m.setType(Message.interested);
+				m.setPayload(null);
 				m.sendMessage(output);
-				
-				// Send an interested or notInterested message depending on the received bitfield contents.
-				if(bitfield.checkPiecesInterested(neighborInfo[x].getBitField()))
-				{
-					m.setType(Message.interested);
-					m.setPayload(null);
-					m.sendMessage(output);
-				}
-				else
-				{
-					m.setType(Message.notInterested);
-					m.setPayload(null);
-					m.sendMessage(output);					
-				}
+			} else {
+				m.setType(Message.notInterested);
+				m.setPayload(null);
+				m.sendMessage(output);
 			}
-			++i;
 		}
 	}
 	
