@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
@@ -41,6 +42,7 @@ public class peerProcess implements Runnable{
 	ServerSocket uploadServerSocket;
 	ServerSocket downloadServerSocket;
 	ServerSocket haveServerSocket;
+	boolean fullFile;
 	
 	public peerProcess(int peerID) throws IOException
 	{
@@ -57,6 +59,13 @@ public class peerProcess implements Runnable{
 	
 	public void run()
 	{
+		//Finished flag setup after checking the whole file value from bitfield
+		for(int i = 0; i < peerConfigs.getTotalPeers(); i++){
+			if((peerConfigs.getHasWholeFile(i)) && (peerConfigs.getPeerList(i) == peer_id)){
+				fullFile = true;
+			}
+		}
+		setupNeighborAndSelfInfo();
 		try {
 			setupNeighborAndSelfInfo();
 			//The doomsday thread starts now. Good Luck!!!
@@ -144,7 +153,10 @@ public class peerProcess implements Runnable{
 		TreeMap prefNeighborList = new TreeMap(Collections.reverseOrder());
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		boolean finished;
+		Random randomGenerator = new Random();
 		int counter;
+		int index;
+		ArrayList<Future<Object>> uploadList = new ArrayList<Future<Object>>();
 		while(true){
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
@@ -157,32 +169,63 @@ public class peerProcess implements Runnable{
 				break;
 			prefNeighborList.clear();
 			prefList.clear();
-			//Check all the download rate and select preferred neighbors
-			for(int i = 0; i < neighborInfo.length; i++){
-				if(neighborInfo[i].getPeerId() != peer_id && neighborInfo[i].getBitField().checkPiecesInterested(bitfield)){
-					prefNeighborList.put(neighborInfo[i].getdownloadRate(), i);
+			if(fullFile) {
+				counter = 0;
+				while(counter < peerConfigs.getPrefNeighbors()) {
+					index = randomGenerator.nextInt(neighborInfo.length);
+					if (neighborInfo[index].getPeerId() != peer_id
+							&& neighborInfo[index].getBitField()
+									.checkPiecesInterested(bitfield)) {
+						prefList.add(index);
+						counter++;
+					}
+				}
+				for(int i = 0; i < prefList.size(); i++){
+					Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[prefList.get(i)],log,
+							neighborInfo, unchokeInterval, filePointer));
+					uploadList.add(uploadFuture);
+				}
+				log.changeOfPreferredNeighbourLog(prefList);
+				// Wait for the future objects here till the upload threads
+				// complete their execution
+				for (Future<Object> f : uploadList) {
+					f.get();
 				}
 			}
-			Set set = prefNeighborList.entrySet();
-			Iterator it = set.iterator();
-			//Start the threads for those neighbors
-			ArrayList<Future<Object>> uploadList = new ArrayList<Future<Object>>();
-			counter = 0;
-			while(it.hasNext()){
-				Map.Entry m = (Map.Entry) it.next();
-				neighborInfo[(Integer)m.getValue()].resetDownload();
-				if(counter >= peerConfigs.getPrefNeighbors())
-					break;
-				prefList.add(neighborInfo[(Integer)m.getValue()].getPeerId());
-				//Check if choked perhaps?
-				Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[(Integer) m.getValue()], log, neighborInfo, unchokeInterval, filePointer));
-				uploadList.add(uploadFuture);
-				counter++;
-			}
-			log.changeOfPreferredNeighbourLog(prefList);
-			//Wait for the future objects here till the upload threads complete their execution
-			for(Future<Object> f : uploadList){
-				f.get();
+			else {
+				// Check all the download rate and select preferred neighbors
+				for (int i = 0; i < neighborInfo.length; i++) {
+					if (neighborInfo[i].getPeerId() != peer_id
+							&& neighborInfo[i].getBitField()
+									.checkPiecesInterested(bitfield)) {
+						prefNeighborList.put(neighborInfo[i].getdownloadRate(),i);
+					}
+				}
+				Set set = prefNeighborList.entrySet();
+				Iterator it = set.iterator();
+				// Start the threads for those neighbors
+				counter = 0;
+				while (it.hasNext()) {
+					Map.Entry m = (Map.Entry) it.next();
+					neighborInfo[(Integer) m.getValue()].resetDownload();
+					if (counter >= peerConfigs.getPrefNeighbors())
+						break;
+					prefList.add(neighborInfo[(Integer) m.getValue()]
+							.getPeerId());
+					// Check if choked perhaps?
+					Future<Object> uploadFuture = uploadPool
+							.submit(new Unchoke(peer_id,
+									neighborInfo[(Integer) m.getValue()], log,
+									neighborInfo, unchokeInterval, filePointer));
+					uploadList.add(uploadFuture);
+					counter++;
+				}
+				log.changeOfPreferredNeighbourLog(prefList);
+				// Wait for the future objects here till the upload threads
+				// complete their execution
+				for (Future<Object> f : uploadList) {
+					f.get();
+				}
 			}
 		}
 		//Finally the pool is shutdown 
@@ -198,7 +241,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setupNeighborAndSelfInfo() throws Exception
+	public void setupNeighborAndSelfInfo() throws UnknownHostException, IOException
 	{
 		int currPeerID;
 		int peerIndex = 0;  // index of the peer initializing the NeighborInfo array
@@ -210,6 +253,11 @@ public class peerProcess implements Runnable{
 		//Need to initialize the neighbor info array and totalNeighbors in the constructor
 		int totalPeers = peerConfigs.getTotalPeers();
 		totalNeighbors = totalPeers-1;
+		
+		// might not need below logic for getting the peerIndex
+		for(int i = 0; i < totalNeighbors; ++i)
+			if(peerConfigs.getPeerList(i) == peer_id)
+				peerIndex = i;
 		
 		// Iterate through all peers in the peerConfigs object
 		for(int i = 0; i < totalNeighbors; ++i)
