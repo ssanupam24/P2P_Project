@@ -324,7 +324,7 @@ public class peerProcess implements Runnable{
 			
 		if(!handshakeValid(hs, currPeerID))
 		{
-			throw new Exception("Error:  Invalid handshake message received from peer " + currPeerID);
+			throw new Exception("Error:  Invalid handshake message received from peer " + currPeerID + ".");
 		}
 			
 		// Send handshake message in response
