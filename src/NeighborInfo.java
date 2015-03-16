@@ -17,9 +17,8 @@ public class NeighborInfo {
 	private Socket haveSocket;
 	private int downloadRate;
 	
-	public NeighborInfo(int peerID, int numPieces) throws UnknownHostException, IOException
+	public NeighborInfo(int numPieces) throws UnknownHostException, IOException
 	{
-		peer_id = peerID;
 		chokedByNeighborState = new AtomicInteger(0);
 		neighborChokedState = new AtomicInteger(0);
 		bitField = new BitField(numPieces);
@@ -51,6 +50,9 @@ public class NeighborInfo {
 	}		
 	public void resetDownload(){		
 		downloadRate = 0;		
+	}
+	public void setPeerID(int peer_id){		
+		this.peer_id = peer_id;		
 	}
 	public void setDownloadAmount(int amount){		
 		downloadRate = amount;		

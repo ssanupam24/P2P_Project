@@ -9,7 +9,7 @@ import java.net.Socket;
  
 public class HandshakeMessage {
 	
-	private final String header = "P2PFILESHARINGPROJ";
+	private String header = "P2PFILESHARINGPROJ";
 	private final byte[] zerobits = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	private int peerID;
 	
@@ -42,8 +42,6 @@ public class HandshakeMessage {
 		  catch (IOException e) {
 			e.printStackTrace();
 		}
-		 
-         
 	 }
 	 
 	 public void receiveMessage(Socket socket){
@@ -53,7 +51,7 @@ public class HandshakeMessage {
              BufferedReader br = new BufferedReader(isr);
              String input = br.readLine();
              peerID = Integer.parseInt(input.substring(28));
-			 
+             header = input.substring(0, 17);
 		 }
 		  catch (Exception e) {
 				e.printStackTrace();
