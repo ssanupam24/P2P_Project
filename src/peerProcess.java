@@ -23,14 +23,13 @@ import java.net.*;
 
 public class peerProcess implements Runnable{
 	//TODO: Add logger after every task
-	
-	private static int Peer_id;
+
 	public static int unchokeInterval;
 	public static int optimisticUnchokeInterval;
 	//Add all the interested neighbors in the below variable if you have the complete file
 	//Do the unchoke only for these neighbors and select it randomly
-	public static ArrayList <NeighborInfo>  unchokedInterested;  //List of UNCHOKED neighbours who would be interested. 
-	public static int optimisticUnchokedPeer;
+	//public static ArrayList <NeighborInfo>  unchokedInterested;  //List of UNCHOKED neighbours who would be interested. 
+	//public static int optimisticUnchokedPeer;
 
 	private static int peer_id;
 	private BitField bitfield;
@@ -65,6 +64,7 @@ public class peerProcess implements Runnable{
 		for(int i = 0; i < peerConfigs.getTotalPeers(); i++){
 			if((peerConfigs.getHasWholeFile(i)) && (peerConfigs.getPeerList(i) == peer_id)){
 				fullFile = true;
+				break;
 			}
 		}
 		try {
