@@ -162,8 +162,11 @@ public class peerProcess implements Runnable{
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborInfo.length; i++){
-				if(!neighborInfo[i].hasFinished())
-					finished = false;
+				if(neighborInfo[i].getPeerId() != peer_id) {
+					neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0);
+					if (!neighborInfo[i].hasFinished())
+						finished = false;
+				}
 			}
 			//if yes then break from the loop and return null
 			if(finished)
@@ -174,9 +177,8 @@ public class peerProcess implements Runnable{
 				counter = 0;
 				while(counter < peerConfigs.getPrefNeighbors()) {
 					index = randomGenerator.nextInt(neighborInfo.length);
-					if (neighborInfo[index].getPeerId() != peer_id
-							&& neighborInfo[index].getBitField()
-									.checkPiecesInterested(bitfield)) {
+					if ((neighborInfo[index].getPeerId() != peer_id)
+							&& (neighborInfo[index].getBitField().checkPiecesInterested(bitfield))) {
 						prefList.add(index);
 						counter++;
 					}

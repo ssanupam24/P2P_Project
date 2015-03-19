@@ -33,8 +33,11 @@ public class NeighborInfo {
 	public int getChokedByNeighborState(){
 		return chokedByNeighborState.get();
 	}
-	public int getNeighborChokedState(){
+	public int getNeighborChokedStateValue(){
 		return neighborChokedState.get();
+	}
+	public AtomicInteger getNeighborChokedState(){
+		return neighborChokedState;
 	}
 	public Socket getUploadSocket(){
 		return uploadSocket;
@@ -64,10 +67,10 @@ public class NeighborInfo {
 		neighborChokedState.set(0);
 	}
 	public void setNeighborOptUnchoked(){
-		neighborChokedState.set(1);
+		neighborChokedState.set(2);
 	}
 	public void setNeighborPreferred(){
-		neighborChokedState.set(2);
+		neighborChokedState.set(1);
 	}	
 	public void setChokedByNeighbor(){
 		chokedByNeighborState.set(0);

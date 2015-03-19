@@ -42,6 +42,8 @@ public class Unchoke implements Callable<Object> {
 		boolean finished;
 		int pieceIndex;
 		//Send Unchoke to the peer that created this callable and then start uploading
+		//Also set the choke state variable
+		selfInfo.getNeighborChokedState().compareAndSet(0, 1);
 		m.setPayload(null);
 		m.setType(Message.unchoke);
 		m.sendMessage(output);
@@ -71,10 +73,12 @@ public class Unchoke implements Callable<Object> {
 			}
 			if((System.currentTimeMillis() - startTimer) >= (time * 1000)){
 				// if the neighbor is not your preferred neighbor, then choke
-				m.setType(Message.choke);
-				m.setPayload(null);
-				m.sendMessage(output);
-				break;
+				if(selfInfo.getNeighborChokedState().compareAndSet(1, 0)) {
+					m.setType(Message.choke);
+					m.setPayload(null);
+					m.sendMessage(output);
+					break;
+				}
 			}
 		}
 		return new Object();

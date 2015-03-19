@@ -47,6 +47,7 @@ public class Download implements Callable<Object> {
 				m.receiveMessage(input);
 				if(m.getType() == Message.unchoke){
 					logger.unchokeLog(selfInfo.getPeerId());
+					selfInfo.setChokedByNeighborState(0, 1);
 					while(true){
 						pieceIndex = bits.setInterestedPiece(selfInfo.getBitField());
 						//If there are no interesting piece then the function returns -1
@@ -62,10 +63,11 @@ public class Download implements Callable<Object> {
 							m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));
 							m.sendMessage(output);
 							m.receiveMessage(input);
-							//If choked received then set the piece to false in bitfield to download it later
+							//If choke received then set the piece to false in bitfield to download it later
 							if(m.getType() == Message.choke){
 								logger.chokeLog(selfInfo.getPeerId());
 								bits.setBitToFalse(pieceIndex);
+								selfInfo.setChokedByNeighborState(1, 0);
 								break;
 							}
 							if(m.getType() == Message.piece){

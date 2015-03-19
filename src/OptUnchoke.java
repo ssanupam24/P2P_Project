@@ -62,18 +62,20 @@ public class OptUnchoke implements Callable<Object> {
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if ((neighborArray[index].getPeerId() != peerId)
-						&& (neighborArray[index].getBitField().checkPiecesInterested(bits))
-						&& (neighborArray[index].setChokedByNeighborState(0, 1)))
+						&& (neighborArray[index].getBitField().checkPiecesInterested(bits))){
 					flag = true;
+				}
 			}
 			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
 			sock = neighborArray[index].getUploadSocket();
 			input = sock.getInputStream();
 			output = sock.getOutputStream();
-			//Send unchoke message
-			m.setType(Message.unchoke);
-			m.setPayload(null);
-			m.sendMessage(output);
+			//Send unchoke message only if choked
+			if(neighborArray[index].getNeighborChokedState().compareAndSet(0, 2)){
+					m.setType(Message.unchoke);
+					m.setPayload(null);
+					m.sendMessage(output);
+			}
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
 				m.receiveMessage(input);
@@ -86,14 +88,12 @@ public class OptUnchoke implements Callable<Object> {
 				}
 				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
 					// if the neighbor is not your preferred neighbor, then choke
-					if(neighborArray[index].getNeighborChokedState() != 2)
-					{
-						m.setType(Message.choke);
-						m.setPayload(null);
-						m.sendMessage(output);
-						neighborArray[index].setChokedByNeighbor();
+					if(neighborArray[index].getNeighborChokedState().compareAndSet(2, 0)){
+							m.setType(Message.choke);
+							m.setPayload(null);
+							m.sendMessage(output);
+							break;
 					}
-					break;
 				}
 			}
 		}
