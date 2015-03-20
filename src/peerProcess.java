@@ -158,12 +158,17 @@ public class peerProcess implements Runnable{
 		int counter;
 		int index;
 		ArrayList<Future<Object>> uploadList = new ArrayList<Future<Object>>();
+		Message m1 = new Message();
 		while(true){
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborInfo.length; i++){
 				if(neighborInfo[i].getPeerId() != peer_id) {
-					neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0);
+					if(neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0)){
+						m1.setType(Message.choke);
+						m1.setPayload(null);
+						m1.sendMessage(neighborInfo[i].getUploadSocket().getOutputStream());
+					}
 					if (!neighborInfo[i].hasFinished())
 						finished = false;
 				}

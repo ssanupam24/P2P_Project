@@ -71,11 +71,16 @@ public class OptUnchoke implements Callable<Object> {
 			input = sock.getInputStream();
 			output = sock.getOutputStream();
 			//Send unchoke message only if choked
+			//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 			if(neighborArray[index].getNeighborChokedState().compareAndSet(0, 2)){
 					m.setType(Message.unchoke);
 					m.setPayload(null);
 					m.sendMessage(output);
 			}
+			//Change the value of the choke state to OptUnchoke if preferred
+			if(neighborArray[index].getNeighborChokedState().get() == 1)
+				neighborArray[index].getNeighborChokedState().set(2);
+			
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
 				m.receiveMessage(input);
@@ -87,7 +92,7 @@ public class OptUnchoke implements Callable<Object> {
 					m.sendMessage(output);
 				}
 				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
-					// if the neighbor is not your preferred neighbor, then choke
+					// if the neighbor is your OptUnchoked neighbor, then choke and set the choke state
 					if(neighborArray[index].getNeighborChokedState().compareAndSet(2, 0)){
 							m.setType(Message.choke);
 							m.setPayload(null);
