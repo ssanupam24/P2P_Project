@@ -76,10 +76,10 @@ public class NeighborInfo {
 		chokedByNeighborState.set(0);
 	}
 	public void setOptUnchokedByNeighbor(){
-		chokedByNeighborState.set(1);
+		chokedByNeighborState.set(2);
 	}
 	public void setPreferredByNeighbor(){
-		chokedByNeighborState.set(2);
+		chokedByNeighborState.set(1);
 	}	
 	public void setBitField(BitField newBitField){
 		bitField = newBitField;
