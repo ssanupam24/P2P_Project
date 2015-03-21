@@ -53,11 +53,8 @@ public class peerProcess implements Runnable{
 		neighborInfo = new NeighborInfo[peerConfigs.getTotalPeers()];
 		optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
 		unchokeInterval = peerConfigs.getTimeUnchoke();
-		
 	}
 	
-	// test comment
-	// overriding run() function
 	public void run()
 	{
 		//Finished flag setup after checking the whole file value from bitfield
@@ -135,10 +132,8 @@ public class peerProcess implements Runnable{
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		catch (Exception e)
@@ -147,7 +142,7 @@ public class peerProcess implements Runnable{
 		}
 		printNeighborInfo();	
 	}
-	//TODO: For Anupam>> Complete this ASAP and don't procrastinate 
+	// Need to add flag if you have the entire file to skip the download and have callable thread
 	public void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
 		ArrayList<Integer> prefList = new ArrayList<Integer>();
@@ -391,45 +386,41 @@ public class peerProcess implements Runnable{
 
 		// If the neighbor is before the peer in the PeerInfo configuration file, 
 		// the peer initiates the handshake process
-		if(neighborIndex < peerIndex)
-		{
-			HandshakeMessage hs = new HandshakeMessage();
-			hs.setPeerID(peer_id);
-			hs.sendMessage(uploadClientSocket);
-			
-			// Receive handshake from neighber and check whether it is valid
-			hs.receiveMessage(uploadClientSocket);
-			if(!handshakeValid(hs, neighborID))
-			{
-				System.out.printf("\nError:  Peer %d received an invalid handshake message from peer %d\n", peer_id, hs.getPeerID());
-				System.exit(1);
-			}
+		HandshakeMessage hs = new HandshakeMessage();
+		hs.setPeerID(peer_id);
+		hs.sendMessage(uploadClientSocket);
 
-			// Sent bitfield message
-			Message m = new Message();
-			m.setType(Message.bitfield);
-			m.setPayload(bitfield.changeBitToByteField());
-			m.sendMessage(output);
-			
-			// Receive bitfield
-			m.receiveMessage(input);
-			if(m.getType() == Message.bitfield)
-			{
-				otherInfo.setBitField(m.getPayload());
-				
-				// Send an interested or notInterested message depending on the received bitfield contents.
-				if(bitfield.checkPiecesInterested(otherInfo.getBitField()))
-				{
-					m.setType(Message.interested);
-					m.setPayload(null);
-					m.sendMessage(output);
-				}
-				else
-				{
-					m.setType(Message.notInterested);
-					m.setPayload(null);
-					m.sendMessage(output);					
-				}
+		// Receive handshake from neighber and check whether it is valid
+		hs.receiveMessage(uploadClientSocket);
+		if (!handshakeValid(hs, neighborID)) {
+			//TODO: ****replace with exception
+			System.out
+					.printf("\nError:  Peer %d received an invalid handshake message from peer %d\n",
+							peer_id, hs.getPeerID());
+			System.exit(1);
+		}
+
+		// Sent bitfield message
+		Message m = new Message();
+		m.setType(Message.bitfield);
+		m.setPayload(bitfield.changeBitToByteField());
+		m.sendMessage(output);
+
+		// Receive bitfield
+		m.receiveMessage(input);
+		if (m.getType() == Message.bitfield) {
+			otherInfo.setBitField(m.getPayload());
+
+			// Send an interested or notInterested message depending on the
+			// received bitfield contents.
+			if (bitfield.checkPiecesInterested(otherInfo.getBitField())) {
+				m.setType(Message.interested);
+				m.setPayload(null);
+				m.sendMessage(output);
+			} else {
+				m.setType(Message.notInterested);
+				m.setPayload(null);
+				m.sendMessage(output);
 			}
 		}
 	}
