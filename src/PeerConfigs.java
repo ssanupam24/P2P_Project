@@ -29,7 +29,7 @@ public class PeerConfigs {
 	private ArrayList<Boolean> hasWholeFile;
 	private ArrayList<Integer> havePortList;
 	
-	public PeerConfigs() throws FileNotFoundException
+	public PeerConfigs() throws Exception
 	{
 		String path = System.getProperty("user.home") + "/project/"; 
 		readCommonConfig(path + "Common.cfg");
@@ -82,7 +82,7 @@ public class PeerConfigs {
 		return hasWholeFile;
 	}
 		
-	public void readCommonConfig(String commonConfigPath) throws FileNotFoundException
+	public void readCommonConfig(String commonConfigPath) throws Exception
 	{
 		try{
 			int token;
@@ -142,14 +142,12 @@ public class PeerConfigs {
 	            	   }
 	            	   else
 	            	   {
-	            		   System.out.println("Error.  Invalid string found in the common configuration file.");
-	            		   System.exit(-1);
+	            		   throw new Exception("Error.  Invalid string found in the common configuration file.");
 	            	   }
 	            	   break;
 	               default:
 	               {
-	            	   System.out.println("Error.  Invalid parameter name.");   
-	            	   System.exit(-1);
+	            	   throw new Exception("Error.  Invalid parameter name.");
 	               }
 	            }
 	         } while (!eof);
@@ -168,7 +166,7 @@ public class PeerConfigs {
 		}
 	}
 	
-	public void readPeerInfoConfig(String peerConfigPath) throws FileNotFoundException
+	public void readPeerInfoConfig(String peerConfigPath) throws Exception
 	{
 		try{
 			int currByte = 0;
@@ -217,8 +215,7 @@ public class PeerConfigs {
 	            	   }
 	            	   else
 	            	   {
-	            		   System.out.println("Error:  The host name in the wrong location.");
-	            		   System.exit(-1);
+	            		   throw new Exception("Error.  The host name in the wrong location.");
 	            	   }   
 	                  break;
 	               case StreamTokenizer.TT_NUMBER:
@@ -231,8 +228,7 @@ public class PeerConfigs {
 	            	   {
 	            		   if(tokenizer.nval < 0 || tokenizer.nval > 65535)
 	            		   {
-	            			   System.out.println("Error:  Invalid port specified.");
-	            			   System.exit(-1);
+	            			   throw new Exception("Error.  Invalid port specified in the PeerInfo configuration file.");   
 	            		   }
 	            		   
 	            		   downloadPortList.add(lineNum, (int) tokenizer.nval);
@@ -249,14 +245,12 @@ public class PeerConfigs {
 	            			   hasWholeFile.add(true);
 	            		   else
 	            		   {
-	            			   System.out.println("Error:  You must specify either a 0 or 1 to denote if the peer has the entire file.");
-	            			   System.exit(-1);
+	            			   throw new Exception("Error.  You must specify either a 0 or 1 to denote if the peer has the entire file.");
 	            		   }
 	            	   }
 	            	   else
 	            	   {
-	            		   System.out.println("Error:  Number argument in wrong location in file.");    		   
-	            		   System.exit(-1);
+	            		   throw new Exception("Error.  Number argument in wrong location in the PeerInfo configuration file.");
 	            	   }
 	                  break;
 	               default:
@@ -269,8 +263,7 @@ public class PeerConfigs {
 			
 			if(totalPeers == 0)
 			{
-     		   System.out.println("Error:  No peer information in the configuration file.");    		   
-     		   System.exit(-1);	
+				throw new Exception("Error.  No peer information in the configuration file.");
 			}
 			//else
 				//printPeerInfo(totalPeers);
@@ -345,7 +338,7 @@ public class PeerConfigs {
 	}
 	
 	
-	public static void main(String [] args) throws FileNotFoundException
+	public static void main(String [] args) throws Exception
 	{	
 		PeerConfigs config = new PeerConfigs();
 	}

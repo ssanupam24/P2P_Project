@@ -331,9 +331,7 @@ public class peerProcess implements Runnable{
 		currPeerID = peerConfigs.getPeerList(index);
 			
 		if(!handshakeValid(hs, currPeerID))
-		{
 			throw new Exception("Error:  Invalid handshake message received from peer " + currPeerID + ".");
-		}
 			
 		// Send handshake message in response
 		hs.setPeerID(peer_id);
@@ -365,7 +363,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setOthersInitialization(NeighborInfo otherInfo, int neighborIndex, int peerIndex, String host, int downloadPort, int uploadPort, int havePort)throws UnknownHostException, IOException
+	public void setOthersInitialization(NeighborInfo otherInfo, int neighborIndex, int peerIndex, String host, int downloadPort, int uploadPort, int havePort)throws Exception
 	{
 		int neighborID = otherInfo.getPeerId();
 		InputStream input;
@@ -392,13 +390,9 @@ public class peerProcess implements Runnable{
 
 		// Receive handshake from neighber and check whether it is valid
 		hs.receiveMessage(uploadClientSocket);
-		if (!handshakeValid(hs, neighborID)) {
-			//TODO: ****replace with exception
-			System.out
-					.printf("\nError:  Peer %d received an invalid handshake message from peer %d\n",
-							peer_id, hs.getPeerID());
-			System.exit(1);
-		}
+		
+		if (!handshakeValid(hs, neighborID))
+			throw new Exception("Error:  Peer " + peer_id + " recieved an invalid handshake message from peer " + hs.getPeerID() + " .");
 
 		// Sent bitfield message
 		Message m = new Message();
