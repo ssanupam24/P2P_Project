@@ -82,7 +82,7 @@ public class LoggerPeer
 	writeToFile(str);
 	}
 	
-	public synchronized void tcpConnedtedLog(int peer_2)
+	public synchronized void tcpConnectedLog(int peer_2)
 	{
 		String str = getTime() + ": Peer " + peerId + " is connected from Peer "+ peer_2 + ".";
 		writeToFile(str);

@@ -43,7 +43,7 @@ public class peerProcess implements Runnable{
 	ServerSocket haveServerSocket;
 	boolean fullFile;
 	
-	public peerProcess(int peerID) throws IOException
+	public peerProcess(int peerID) throws Exception
 	{
 		peer_id = peerID;
 		peerConfigs = new PeerConfigs();
@@ -325,14 +325,15 @@ public class peerProcess implements Runnable{
 		HandshakeMessage hs = new HandshakeMessage();	
 		Message m = new Message();
 		int currPeerID;
-		
+		//Check if the peer ID is the correct one since we are iterating from the server peer and not client peer
 		// Receive handshake message
 		hs.receiveMessage(downloadSocket);
 		currPeerID = peerConfigs.getPeerList(index);
-			
+		int hsId = hs.getPeerID();	
 		if(!handshakeValid(hs, currPeerID))
 			throw new Exception("Error:  Invalid handshake message received from peer " + currPeerID + ".");
 			
+		log.tcpConnectedLog(hs.getPeerID());
 		// Send handshake message in response
 		hs.setPeerID(peer_id);
 		hs.sendMessage(downloadSocket);
@@ -342,24 +343,32 @@ public class peerProcess implements Runnable{
 		m.receiveMessage(input);
 		if (m.getType() == Message.bitfield) 
 		{
-			neighborInfo[index].setBitField(m.getPayload());
-
+			BitField bf = new BitField(peerConfigs.getTotalPieces());
+			bf.setBitFromByte(m.getPayload());
+			neighborInfo[index].setBitField(bf);
+			
 			// Send bitfield in response
 			m.setType(Message.bitfield);
 			m.setPayload(bitfield.changeBitToByteField());
 			m.sendMessage(output);
-
-			// Send an interested or notInterested message depending on the
-			// received bitfield contents.
-			if (bitfield.checkPiecesInterested(neighborInfo[index].getBitField())) {
-				m.setType(Message.interested);
-				m.setPayload(null);
-				m.sendMessage(output);
-			} else {
-				m.setType(Message.notInterested);
-				m.setPayload(null);
-				m.sendMessage(output);
-			}
+		}
+		m.receiveMessage(input);
+		if(m.getType() == Message.notInterested){
+			log.notInterestedLog(hsId);
+		}
+		else{
+			log.interestedLog(hsId);
+		}
+		// Send an interested or notInterested message depending on the
+		// received bitfield contents.
+		if (bitfield.checkPiecesInterested(neighborInfo[index].getBitField())) {
+			m.setType(Message.interested);
+			m.setPayload(null);
+			m.sendMessage(output);
+		} else {
+			m.setType(Message.notInterested);
+			m.setPayload(null);
+			m.sendMessage(output);
 		}
 	}
 	
@@ -387,10 +396,10 @@ public class peerProcess implements Runnable{
 		HandshakeMessage hs = new HandshakeMessage();
 		hs.setPeerID(peer_id);
 		hs.sendMessage(uploadClientSocket);
-
-		// Receive handshake from neighber and check whether it is valid
+		//Connected to log here
+		// Receive handshake from neighbor and check whether it is valid
 		hs.receiveMessage(uploadClientSocket);
-		
+		log.tcpConnectionEstablishedLog(otherInfo.getPeerId());
 		if (!handshakeValid(hs, neighborID))
 			throw new Exception("Error:  Peer " + peer_id + " recieved an invalid handshake message from peer " + hs.getPeerID() + " .");
 
@@ -403,19 +412,29 @@ public class peerProcess implements Runnable{
 		// Receive bitfield
 		m.receiveMessage(input);
 		if (m.getType() == Message.bitfield) {
-			otherInfo.setBitField(m.getPayload());
-
-			// Send an interested or notInterested message depending on the
-			// received bitfield contents.
-			if (bitfield.checkPiecesInterested(otherInfo.getBitField())) {
-				m.setType(Message.interested);
-				m.setPayload(null);
-				m.sendMessage(output);
-			} else {
-				m.setType(Message.notInterested);
-				m.setPayload(null);
-				m.sendMessage(output);
-			}
+			//otherInfo.setBitField(m.getPayload());
+			BitField bf = new BitField(peerConfigs.getTotalPieces());
+			bf.setBitFromByte(m.getPayload());
+			otherInfo.setBitField(bf);
+		}
+		// Send an interested or notInterested message depending on the
+		// received bitfield contents.
+		if (bitfield.checkPiecesInterested(otherInfo.getBitField())) {
+			m.setType(Message.interested);
+			m.setPayload(null);
+			m.sendMessage(output);
+		} else {
+			m.setType(Message.notInterested);
+			m.setPayload(null);
+			m.sendMessage(output);
+		}
+		//Receive interested/not interested messages
+		m.receiveMessage(input);
+		if(m.getType() == Message.notInterested){
+			log.notInterestedLog(otherInfo.getPeerId());
+		}
+		else{
+			log.interestedLog(otherInfo.getPeerId());
 		}
 	}
 
@@ -429,7 +448,7 @@ public class peerProcess implements Runnable{
 			return false;		
 	}
 	
-	public static void main(String [] args) throws NumberFormatException, IOException
+	public static void main(String [] args) throws Exception
 	{	
 		// Create PeerInfo object and start it as a separate thread
 		peerProcess config = new peerProcess(Integer.parseInt(args[0]));

@@ -52,6 +52,7 @@ public class Download implements Callable<Object> {
 						pieceIndex = bits.setInterestedPiece(selfInfo.getBitField());
 						//If there are no interesting piece then the function returns -1
 						if(pieceIndex == -1){
+							//Send it to upload socket
 							m.setType(Message.notInterested);
 							m.setPayload(null);
 							m.sendMessage(output);

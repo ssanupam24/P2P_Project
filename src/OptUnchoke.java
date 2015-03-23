@@ -84,6 +84,12 @@ public class OptUnchoke implements Callable<Object> {
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
 				m.receiveMessage(input);
+				//Add the not interested thing here
+				if(m.getType() == Message.notInterested){
+					logger.notInterestedLog(neighborArray[index].getPeerId());
+					//break or do something
+					break;
+				}
 				if(m.getType() == Message.request){
 					index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
 					Piece newPiece = file.readFile(index1);

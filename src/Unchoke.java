@@ -55,6 +55,7 @@ public class Unchoke implements Callable<Object> {
 		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
 		//for those neighbors, seems like it's efficient
 		while(true){
+			//Add the not interested message condition
 			startTimer = System.currentTimeMillis();
 			m.receiveMessage(input);
 			finished = true;
@@ -68,6 +69,11 @@ public class Unchoke implements Callable<Object> {
 			//if yes then break from the loop and return an Object to keep track of the task in peerProcess
 			if(finished)
 				break;
+			if(m.getType() == Message.notInterested){
+				logger.notInterestedLog(selfInfo.getPeerId());
+				//break or do something
+				break;
+			}
 			if(m.getType() == Message.request){
 				pieceIndex = ByteIntConversion.byteArrayToInt(m.getPayload());
 				Piece p = file.readFile(pieceIndex);
