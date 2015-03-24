@@ -32,6 +32,7 @@ public class Download implements Callable<Object> {
 		Message m = new Message();
 		boolean finished;
 		int pieceIndex;
+		//Remove the check for all the neighbors and add the check for yourself if you are done with downloading
 		while(true){
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not

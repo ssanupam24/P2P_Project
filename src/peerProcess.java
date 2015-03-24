@@ -86,7 +86,7 @@ public class peerProcess implements Runnable{
 					downList.add(downFuture);
 					Future<Object> haveFuture = havePool
 							.submit(new HaveMessage(peer_id, rec, log,
-									neighborInfo));
+									neighborInfo, bitfield));
 					haveList.add(haveFuture);
 				}
 				

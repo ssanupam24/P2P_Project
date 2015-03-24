@@ -24,13 +24,15 @@ public class HaveMessage implements Callable<Object> {
 	private InputStream input;
 	private OutputStream output;
 	private Message m;
+	private BitField bits;
 	
-	public HaveMessage(int id, NeighborInfo selfInfo, LoggerPeer logger, NeighborInfo[] neighborArray) throws IOException{
+	public HaveMessage(int id, NeighborInfo selfInfo, LoggerPeer logger, NeighborInfo[] neighborArray, BitField bits) throws IOException{
 		this.selfInfo = selfInfo;
 		//PeerID is the host(server) peer process
 		this.peerId = id;
 		this.logger = logger;
 		this.neighborArray = neighborArray;
+		this.bits = bits;
 		m = new Message();
 		sock = selfInfo.getHaveSocket();
 		input = sock.getInputStream();
@@ -57,6 +59,17 @@ public class HaveMessage implements Callable<Object> {
 				pieceIndex = ByteIntConversion.byteArrayToInt(m.getPayload());
 				selfInfo.getBitField().setBitToTrue(pieceIndex);
 				logger.haveLog(selfInfo.getPeerId(), pieceIndex);
+				//Send interested/not message here
+				if(bits.checkPiecesInterested(selfInfo.getBitField())){
+					m.setType(Message.interested);
+					m.setPayload(null);
+					m.sendMessage(output);
+				}
+				else{
+					m.setType(Message.notInterested);
+					m.setPayload(null);
+					m.sendMessage(output);
+				}
 			}
 		}
 		return new Object();
