@@ -1,7 +1,6 @@
 /*
  * @author Anupam and Gloria
  */
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -9,7 +8,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
@@ -24,14 +22,14 @@ import java.net.*;
 public class peerProcess implements Runnable{
 	//TODO: Add logger after every task
 
-	public static int unchokeInterval;
-	public static int optimisticUnchokeInterval;
+	public final int unchokeInterval;
+	public final int optimisticUnchokeInterval;
 	//Add all the interested neighbors in the below variable if you have the complete file
 	//Do the unchoke only for these neighbors and select it randomly
 	//public static ArrayList <NeighborInfo>  unchokedInterested;  //List of UNCHOKED neighbours who would be interested. 
 	//public static int optimisticUnchokedPeer;
 
-	private static int peer_id;
+	private final int peer_id;
 	private BitField bitfield;
 	private static LoggerPeer log;
 	private HandleFile filePointer;
@@ -45,14 +43,16 @@ public class peerProcess implements Runnable{
 	
 	public peerProcess(int peerID) throws Exception
 	{
-		peer_id = peerID;
-		peerConfigs = new PeerConfigs();
-		filePointer = new HandleFile(peer_id, peerConfigs);
+		this.peer_id = peerID;
+		this.peerConfigs = new PeerConfigs();
+		this.filePointer = new HandleFile(peer_id, peerConfigs);
 		log = new LoggerPeer(peer_id);
-		bitfield = new BitField(peerConfigs.getTotalPieces()); 
-		neighborInfo = new NeighborInfo[peerConfigs.getTotalPeers()];
-		optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
-		unchokeInterval = peerConfigs.getTimeUnchoke();
+		this.bitfield = new BitField(peerConfigs.getTotalPieces()); 
+		this.totalNeighbors = peerConfigs.getTotalPeers() - 1;
+		this.neighborInfo = new NeighborInfo[totalNeighbors];
+		this.optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
+		this.unchokeInterval = peerConfigs.getTimeUnchoke();
+		
 	}
 	
 	public void run()
@@ -61,6 +61,7 @@ public class peerProcess implements Runnable{
 		for(int i = 0; i < peerConfigs.getTotalPeers(); i++){
 			if((peerConfigs.getHasWholeFile(i)) && (peerConfigs.getPeerList(i) == peer_id)){
 				fullFile = true;
+				bitfield.setAllBitsTrue();
 				break;
 			}
 		}
@@ -78,8 +79,6 @@ public class peerProcess implements Runnable{
 			for(int j = 0; j < neighborInfo.length; j++){
 				
 				NeighborInfo rec = neighborInfo[j];
-				//You don't have to submit a download and have thread for yourself
-				if(rec.getPeerId() != peer_id) {
 					Future<Object> downFuture = downloadPool
 							.submit(new Download(peer_id, neighborInfo, rec,
 									bitfield, filePointer, log));
@@ -88,7 +87,6 @@ public class peerProcess implements Runnable{
 							.submit(new HaveMessage(peer_id, rec, log,
 									neighborInfo, bitfield));
 					haveList.add(haveFuture);
-				}
 				
 			}
 			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
@@ -98,10 +96,8 @@ public class peerProcess implements Runnable{
 			//receiving and sending all the pieces
 			optFuture.get();
 			for(int j = 0; j < neighborInfo.length; j++){
-				if(neighborInfo[j].getPeerId() != peer_id){
 					downList.get(j).get();
 					haveList.get(j).get();
-				}
 			}
 			log.completeDownloadLog();
 			downloadPool.shutdown();
@@ -109,22 +105,14 @@ public class peerProcess implements Runnable{
 			optThread.shutdown();
 			//Hopefully all the tasks are completed successfully and the control reaches here, 
 			//now its celebration time :)
+			uploadServerSocket.close();
+			downloadServerSocket.close();
+			haveServerSocket.close();
 			for(int j = 0; j < neighborInfo.length; j++){
-				//Close all the sockets
-				if(neighborInfo[j].getPeerId() == peer_id) {
-					uploadServerSocket.close();
-					downloadServerSocket.close();
-					haveServerSocket.close();
-					
-					neighborInfo[j].getHaveSocket().close();
-					neighborInfo[j].getDownloadSocket().close();
-					neighborInfo[j].getUploadSocket().close();	
-				}
-				else{
-					neighborInfo[j].getHaveSocket().close();
-					neighborInfo[j].getDownloadSocket().close();
-					neighborInfo[j].getUploadSocket().close();
-				}
+				// Close all the sockets
+				neighborInfo[j].getHaveSocket().close();
+				neighborInfo[j].getDownloadSocket().close();
+				neighborInfo[j].getUploadSocket().close();
 			}
 			
 		} catch (UnknownHostException e) {
@@ -158,15 +146,14 @@ public class peerProcess implements Runnable{
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborInfo.length; i++){
-				if(neighborInfo[i].getPeerId() != peer_id) {
-					if(neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0)){
-						m1.setType(Message.choke);
-						m1.setPayload(null);
-						m1.sendMessage(neighborInfo[i].getUploadSocket().getOutputStream());
-					}
-					if (!neighborInfo[i].hasFinished())
-						finished = false;
+				if (neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0)) {
+					m1.setType(Message.choke);
+					m1.setPayload(null);
+					m1.sendMessage(neighborInfo[i].getUploadSocket()
+							.getOutputStream());
 				}
+				if (!neighborInfo[i].hasFinished())
+					finished = false;
 			}
 			//if yes then break from the loop and return null
 			if(finished)
@@ -177,8 +164,7 @@ public class peerProcess implements Runnable{
 				counter = 0;
 				while(counter < peerConfigs.getPrefNeighbors()) {
 					index = randomGenerator.nextInt(neighborInfo.length);
-					if ((neighborInfo[index].getPeerId() != peer_id)
-							&& (neighborInfo[index].getBitField().checkPiecesInterested(bitfield))) {
+					if ((neighborInfo[index].getBitField().checkPiecesInterested(bitfield))) {
 						prefList.add(index);
 						counter++;
 					}
@@ -198,9 +184,7 @@ public class peerProcess implements Runnable{
 			else {
 				// Check all the download rate and select preferred neighbors
 				for (int i = 0; i < neighborInfo.length; i++) {
-					if (neighborInfo[i].getPeerId() != peer_id
-							&& neighborInfo[i].getBitField()
-									.checkPiecesInterested(bitfield)) {
+					if (neighborInfo[i].getBitField().checkPiecesInterested(bitfield)) {
 						prefNeighborList.put(neighborInfo[i].getdownloadRate(),i);
 					}
 				}
@@ -253,17 +237,8 @@ public class peerProcess implements Runnable{
 		int downloadPort;
 		int uploadPort;
 		int havePort;
-		//Need to initialize the neighbor info array and totalNeighbors in the constructor
-		int totalPeers = peerConfigs.getTotalPeers();
-		totalNeighbors = totalPeers-1;
-		
-		// might not need below logic for getting the peerIndex
-		for(int i = 0; i < totalNeighbors; ++i)
-			if(peerConfigs.getPeerList(i) == peer_id)
-				peerIndex = i;
-		
 		// Iterate through all peers in the peerConfigs object
-		for(int i = 0; i < totalNeighbors; ++i)
+		for(int i = 0; i < peerConfigs.getTotalPeers(); ++i)
 		{
 			currPeerID = peerConfigs.getPeerList(i);
 			host = peerConfigs.getHostList(i);
@@ -286,12 +261,6 @@ public class peerProcess implements Runnable{
 			{
 				peerIndex = i;
 				
-				if(peerConfigs.getHasWholeFile(i))
-					bitfield.setAllBitsTrue();
-				
-				neighborInfo[i] = new NeighborInfo(totalPieces);
-				neighborInfo[i].setPeerID(peer_id);
-				
 				uploadServerSocket = new ServerSocket(uploadPort);
 				downloadServerSocket = new ServerSocket(downloadPort);
 				haveServerSocket = new ServerSocket(havePort);
@@ -309,11 +278,12 @@ public class peerProcess implements Runnable{
 	public void setSelfInitialization(ServerSocket uploadServerSocket, 
 			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws Exception
 	{
+		neighborInfo[index] = new NeighborInfo(peerConfigs.getTotalPieces());
 		// Sets up sockets to access the server sockets' I/O streams
 		Socket uploadSocket = uploadServerSocket.accept();
 		Socket downloadSocket = downloadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
-	
+		
 		// Put the sockets in the neighborInfo object
 		neighborInfo[index].setUploadSocket(uploadSocket);
 		neighborInfo[index].setDownloadSocket(downloadSocket);
@@ -456,7 +426,7 @@ public class peerProcess implements Runnable{
         t.start();
 	}
 	
-	public static int getPeerID(){
+	public int getPeerID(){
 		return peer_id;
 	}
 

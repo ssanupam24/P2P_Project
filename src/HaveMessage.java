@@ -43,7 +43,7 @@ public class HaveMessage implements Callable<Object> {
 		boolean finished;
 		int pieceIndex;
 		while(true){
-			m.receiveMessage(input);
+			
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborArray.length; i++){
@@ -55,6 +55,7 @@ public class HaveMessage implements Callable<Object> {
 			//if yes then break from the loop and return null
 			if(finished)
 				break;
+			m.receiveMessage(input);
 			if(m.getType() == Message.have){
 				pieceIndex = ByteIntConversion.byteArrayToInt(m.getPayload());
 				selfInfo.getBitField().setBitToTrue(pieceIndex);
@@ -70,6 +71,12 @@ public class HaveMessage implements Callable<Object> {
 					m.setPayload(null);
 					m.sendMessage(output);
 				}
+			}
+			if(m.getType() == Message.interested){
+				logger.interestedLog(selfInfo.getPeerId());
+			}
+			else if(m.getType() == Message.notInterested){
+				logger.notInterestedLog(selfInfo.getPeerId());
 			}
 		}
 		return new Object();
