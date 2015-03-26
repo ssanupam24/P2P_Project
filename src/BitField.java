@@ -30,7 +30,7 @@ public class BitField {
 		else
 			noOfBytes = (totPieces / 8) + 1;
 		byte[] result = new byte[noOfBytes];
-		for(int i =0; i < totPieces; i++){
+		for(int i =0; i < noOfBytes; i++){
 			result[i] = (byte)0;
 		}
 		for(int i =0; i < totPieces; i++){

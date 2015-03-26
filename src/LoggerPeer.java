@@ -78,13 +78,13 @@ public class LoggerPeer
 	
 	public synchronized void tcpConnectionEstablishedLog(int peer_2)
 	{
-	String str = getTime() + ": Peer " + peerId + " makes a connection to Peer "+ peer_2 + ".";
+	String str = getTime() + ": Peer " + peerId + " makes a connection to Peer "+ peer_2 + ".\n";
 	writeToFile(str);
 	}
 	
 	public synchronized void tcpConnectedLog(int peer_2)
 	{
-		String str = getTime() + ": Peer " + peerId + " is connected from Peer "+ peer_2 + ".";
+		String str = getTime() + ": Peer " + peerId + " is connected from Peer "+ peer_2 + ".\n";
 		writeToFile(str);
 	}
 	
@@ -94,55 +94,55 @@ public class LoggerPeer
 		for(int peer : prefList){
 		peersArr = peersArr + peer + ", ";
 		}
-		String str = getTime() + ": Peer " + peerId + " has the preferred neighbours "+ peersArr + ".";
+		String str = getTime() + ": Peer " + peerId + " has the preferred neighbours "+ peersArr + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void changeOfOptUnchokedNeighbourLog(int peer_2)
 	{
-		String str = getTime() + ": Peer " + peerId + " has the optimistically unchoked neighbour "+ peer_2 + ".";
+		String str = getTime() + ": Peer " + peerId + " has the optimistically unchoked neighbour "+ peer_2 + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void unchokeLog(int peer_2)
 	{
-		String str = getTime() + ": Peer " + peerId + " is unchoked by the "+ peer_2 + ".";
+		String str = getTime() + ": Peer " + peerId + " is unchoked by the "+ peer_2 + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void chokeLog(int peer_2)
 	{
-		String str = getTime() + ": Peer " + peerId + " is choked by "+ peer_2 + ".";
+		String str = getTime() + ": Peer " + peerId + " is choked by "+ peer_2 + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void haveLog(int peer_2, int pieceIndex)
 	{
-		String str = getTime() + ": Peer " + peerId + " received the 'have' message from "+ peer_2 +  " for the piece " + pieceIndex + ".";
+		String str = getTime() + ": Peer " + peerId + " received the 'have' message from "+ peer_2 +  " for the piece " + pieceIndex + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void interestedLog(int peer_2)
 	{
-		String str = getTime() + ": Peer " + peerId + " received the 'interested' message from "+ peer_2 + ".";
+		String str = getTime() + ": Peer " + peerId + " received the 'interested' message from "+ peer_2 + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void notInterestedLog(int peer_2)
 	{
-		String str = getTime() + ": Peer " + peerId + " received the 'not interested' message from "+ peer_2 + ".";
+		String str = getTime() + ": Peer " + peerId + " received the 'not interested' message from "+ peer_2 + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void downloadingLog(int peer_2, int pieceIndex, int numPieces)
 	{
-		String str = getTime() + ": Peer " + peerId + " has downloaded the piece " + pieceIndex + " from " + peer_2 + "." + "\nNow the number of pieces it has is " + numPieces + ".";
+		String str = getTime() + ": Peer " + peerId + " has downloaded the piece " + pieceIndex + " from " + peer_2 + "." + "\nNow the number of pieces it has is " + numPieces + ".\n";
 		writeToFile(str);
 	}
 	
 	public synchronized void completeDownloadLog()
 	{
-		String str = getTime() + ": Peer " + peerId + " has downloaded the complete file.";
+		String str = getTime() + ": Peer " + peerId + " has downloaded the complete file.\n";
 		writeToFile(str);
 	}
 	}
