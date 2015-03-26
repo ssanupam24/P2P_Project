@@ -33,11 +33,9 @@ public class HandshakeMessage {
 	 public void sendMessage(Socket socket){
 		 try{
 			OutputStream os = socket.getOutputStream();
-			OutputStreamWriter osw = new OutputStreamWriter(os);
-			BufferedWriter output = new BufferedWriter(osw);
-			output.write(header);
-			output.write(zerobits.toString());
-			output.write(peerID);
+			os.write(header.getBytes());
+			os.write(zerobits);
+			os.write(ByteIntConversion.intToByteArray(peerID));
 		} 
 		  catch (IOException e) {
 			e.printStackTrace();
@@ -47,11 +45,14 @@ public class HandshakeMessage {
 	 public void receiveMessage(Socket socket){
 		 try{
 			 InputStream is = socket.getInputStream();
-             InputStreamReader isr = new InputStreamReader(is);
-             BufferedReader br = new BufferedReader(isr);
-             String input = br.readLine();
-             peerID = Integer.parseInt(input.substring(28));
-             header = input.substring(0, 17);
+             byte[] newHeader = new byte[18];
+             byte[] newID = new byte[4];
+             is.read(newHeader);
+             header = new String(newHeader, "UTF-8");
+             is.read(zerobits);
+             is.read(newID);
+             peerID = ByteIntConversion.byteArrayToInt(newID);
+             System.out.println(header + " " + peerID);
 		 }
 		  catch (Exception e) {
 				e.printStackTrace();

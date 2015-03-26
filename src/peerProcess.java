@@ -62,12 +62,14 @@ public class peerProcess implements Runnable{
 			if((peerConfigs.getHasWholeFile(i)) && (peerConfigs.getPeerList(i) == peer_id)){
 				fullFile = true;
 				bitfield.setAllBitsTrue();
+				System.out.println("Inside checking file and seting up bitfield");
 				break;
 			}
 		}
 		try {
 			setupNeighborAndSelfInfo();
 			//The doomsday thread starts now. Good Luck!!!
+			System.out.println("Thread spawning starts");
 			ArrayList<Future<Object>> downList = new ArrayList<Future<Object>>();
 			ArrayList<Future<Object>> haveList = new ArrayList<Future<Object>>();
 			//Create executor services for download and have.
@@ -77,7 +79,7 @@ public class peerProcess implements Runnable{
 			ExecutorService optThread = Executors.newSingleThreadExecutor();
 			
 			for(int j = 0; j < neighborInfo.length; j++){
-				
+				System.out.println("Submitted download and have");
 				NeighborInfo rec = neighborInfo[j];
 					Future<Object> downFuture = downloadPool
 							.submit(new Download(peer_id, neighborInfo, rec,
@@ -96,6 +98,7 @@ public class peerProcess implements Runnable{
 			//receiving and sending all the pieces
 			optFuture.get();
 			for(int j = 0; j < neighborInfo.length; j++){
+				System.out.println("Waiting for return");
 					downList.get(j).get();
 					haveList.get(j).get();
 			}
@@ -128,11 +131,12 @@ public class peerProcess implements Runnable{
 		{
 			e.printStackTrace();
 		}
-		printNeighborInfo();	
+		//printNeighborInfo();	
 	}
 	// Need to add flag if you have the entire file to skip the download and have callable thread
 	public void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
+		System.out.println("Uploading process starts");
 		ArrayList<Integer> prefList = new ArrayList<Integer>();
 		TreeMap prefNeighborList = new TreeMap(Collections.reverseOrder());
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
@@ -215,6 +219,7 @@ public class peerProcess implements Runnable{
 				}
 			}
 		}
+		System.out.println("Uploading ho gaya");
 		//Finally the pool is shutdown 
 		uploadPool.shutdownNow();
 	}
@@ -248,19 +253,19 @@ public class peerProcess implements Runnable{
 			
 			// If a neighbor, populate neighbor information and set up client sockets
 			if(currPeerID != peer_id)
-			{	
+			{	System.out.println("Client setup starts");
 				neighborInfo[i] = new NeighborInfo(totalPieces);
 				neighborInfo[i].setPeerID(currPeerID);
 				
 				if(peerConfigs.getHasWholeFile(i))
 					neighborInfo[i].getBitField().setAllBitsTrue();	
 				
-				setOthersInitialization(neighborInfo[i], i, peerIndex, host, downloadPort, uploadPort, havePort); // sets up client sockets
+				setOthersInitialization(neighborInfo[i], host, downloadPort, uploadPort, havePort); // sets up client sockets
 			}
 			else // If self, set up BitField and server sockets
 			{
 				peerIndex = i;
-				
+				System.out.println("Server setup starts");
 				uploadServerSocket = new ServerSocket(uploadPort);
 				downloadServerSocket = new ServerSocket(downloadPort);
 				haveServerSocket = new ServerSocket(havePort);
@@ -278,6 +283,7 @@ public class peerProcess implements Runnable{
 	public void setSelfInitialization(ServerSocket uploadServerSocket, 
 			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws Exception
 	{
+		System.out.println("Server started");
 		neighborInfo[index] = new NeighborInfo(peerConfigs.getTotalPieces());
 		// Sets up sockets to access the server sockets' I/O streams
 		Socket uploadSocket = uploadServerSocket.accept();
@@ -288,7 +294,7 @@ public class peerProcess implements Runnable{
 		neighborInfo[index].setUploadSocket(uploadSocket);
 		neighborInfo[index].setDownloadSocket(downloadSocket);
 		neighborInfo[index].setHaveSocket(haveSocket);
-		
+		System.out.println("Accepted connections");
 		InputStream input = downloadSocket.getInputStream();
 		OutputStream output = downloadSocket.getOutputStream();
 		
@@ -298,10 +304,11 @@ public class peerProcess implements Runnable{
 		//Check if the peer ID is the correct one since we are iterating from the server peer and not client peer
 		// Receive handshake message
 		hs.receiveMessage(downloadSocket);
-		currPeerID = peerConfigs.getPeerList(index);
+		System.out.println("Received a handshake");
+		currPeerID = peerConfigs.getPeerList(index+1);
 		int hsId = hs.getPeerID();	
 		if(!handshakeValid(hs, currPeerID))
-			throw new Exception("Error:  Invalid handshake message received from peer " + currPeerID + ".");
+			throw new Exception("1Error:  Peer " + peer_id + " received an invalid handshake message from peer " + hs.getPeerID() + "."); 
 			
 		log.tcpConnectedLog(hs.getPeerID());
 		// Send handshake message in response
@@ -342,12 +349,12 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setOthersInitialization(NeighborInfo otherInfo, int neighborIndex, int peerIndex, String host, int downloadPort, int uploadPort, int havePort)throws Exception
+	public void setOthersInitialization(NeighborInfo otherInfo, String host, int downloadPort, int uploadPort, int havePort)throws Exception
 	{
 		int neighborID = otherInfo.getPeerId();
 		InputStream input;
 		OutputStream output;
-		
+		System.out.println("Client sockets are being created");
 		// set up client sockets for peer apart from local server peer
 		Socket uploadClientSocket = new Socket(host, downloadPort);
 		Socket downloadClientSocket = new Socket(host, uploadPort);
@@ -366,14 +373,14 @@ public class peerProcess implements Runnable{
 		HandshakeMessage hs = new HandshakeMessage();
 		hs.setPeerID(peer_id);
 		hs.sendMessage(uploadClientSocket);
-		//Connected to log here
+		
 		// Receive handshake from neighbor and check whether it is valid
 		hs.receiveMessage(uploadClientSocket);
 		log.tcpConnectionEstablishedLog(otherInfo.getPeerId());
 		if (!handshakeValid(hs, neighborID))
-			throw new Exception("Error:  Peer " + peer_id + " recieved an invalid handshake message from peer " + hs.getPeerID() + " .");
+			throw new Exception("2Error:  Peer " + peer_id + " received an invalid handshake message from peer " + hs.getPeerID() + " .");
 
-		// Sent bitfield message
+		// Send bitfield message
 		Message m = new Message();
 		m.setType(Message.bitfield);
 		m.setPayload(bitfield.changeBitToByteField());
@@ -383,6 +390,7 @@ public class peerProcess implements Runnable{
 		m.receiveMessage(input);
 		if (m.getType() == Message.bitfield) {
 			//otherInfo.setBitField(m.getPayload());
+			System.out.println("Bitfield is received");
 			BitField bf = new BitField(peerConfigs.getTotalPieces());
 			bf.setBitFromByte(m.getPayload());
 			otherInfo.setBitField(bf);
