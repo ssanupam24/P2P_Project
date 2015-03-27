@@ -19,7 +19,7 @@ public class Message
   public static final byte bitfield = 5;
   public static final byte request = 6;
   public static final byte piece = 7;
-  public static final byte finish = 8; 
+  //public static final byte finish = 8; 
   
   public int getLength()
   {
@@ -84,20 +84,14 @@ public class Message
 	  try{
 		  byte[] receivedLength = new byte[4];
 		  byte[] receivedType = new byte[1];
-		  int counter = 0;
 		  int index;
-		  //Receive message length
-		  while(counter < 4){
-			  index = input.read(receivedLength, counter, 4 - counter);
-			  counter += index;
-		  }
+		  index = input.read(receivedLength);
+		  if(index == -1)
+			  throw new IOException();
 		  messageLength = ByteIntConversion.byteArrayToInt(receivedLength);
-		  counter = 0;
-		//Receive message type
-		  while(counter < 1){
-			  index = input.read(receivedType, counter, 1 - counter);
-			  counter += index;
-		  }
+		  index = input.read(receivedType);
+		  if(index == -1)
+			  throw new IOException();
 		  messageType = receivedType[0];
 		  if(messageLength > 1){
 			  messagePayload = new byte[messageLength - 1];
@@ -105,12 +99,29 @@ public class Message
 		  else {
 			  messagePayload = null;
 		  }
-		  counter = 0;
+		  if(messagePayload != null){
+			  index = input.read(messagePayload);
+			  if(index == -1)
+				  throw new IOException();
+		  }
+		//Receive message length
+		  /*while(counter < 4){
+			  index = input.read(receivedLength, counter, 4 - counter);
+			  counter += index;
+		  }
+		  //counter = 0;
+		//Receive message type
+		  while(counter < 1){
+			  index = input.read(receivedType, counter, 1 - counter);
+			  counter += index;
+		  }
+		  
+		  //counter = 0;
 		//Receive message payload
 		  while(counter < messageLength - 1){
 			  index = input.read(messagePayload, counter, messageLength - counter);
 			  counter += index;
-		  }
+		  }*/
 	  }
 	  catch(Exception e){
 		  e.printStackTrace();

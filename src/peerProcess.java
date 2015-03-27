@@ -311,6 +311,7 @@ public class peerProcess implements Runnable{
 			throw new Exception("1Error:  Peer " + peer_id + " received an invalid handshake message from peer " + hs.getPeerID() + "."); 
 			
 		log.tcpConnectedLog(hs.getPeerID());
+		neighborInfo[index].setPeerID(hsId);
 		// Send handshake message in response
 		hs.setPeerID(peer_id);
 		hs.sendMessage(downloadSocket);
@@ -333,8 +334,11 @@ public class peerProcess implements Runnable{
 		if(m.getType() == Message.notInterested){
 			log.notInterestedLog(hsId);
 		}
-		else{
+		else if(m.getType() == Message.interested){
 			log.interestedLog(hsId);
+		}
+		else{
+			throw new IOException();
 		}
 		// Send an interested or notInterested message depending on the
 		// received bitfield contents.
