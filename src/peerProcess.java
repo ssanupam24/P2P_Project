@@ -81,12 +81,10 @@ public class peerProcess implements Runnable{
 			for(int j = 0; j < neighborInfo.length; j++){
 				System.out.println("Submitted download and have");
 				NeighborInfo rec = neighborInfo[j];
-					Future<Object> downFuture = downloadPool
-							.submit(new Download(peer_id, neighborInfo, rec,
+					Future<Object> downFuture = downloadPool.submit(new Download(peer_id, neighborInfo, rec,
 									bitfield, filePointer, log));
 					downList.add(downFuture);
-					Future<Object> haveFuture = havePool
-							.submit(new HaveMessage(peer_id, rec, log,
+					Future<Object> haveFuture = havePool.submit(new HaveMessage(peer_id, rec, log,
 									neighborInfo, bitfield));
 					haveList.add(haveFuture);
 				
@@ -219,7 +217,7 @@ public class peerProcess implements Runnable{
 				}
 			}
 		}
-		System.out.println("Uploading ho gaya");
+		System.out.println("Uploading done");
 		//Finally the pool is shutdown 
 		uploadPool.shutdownNow();
 	}
