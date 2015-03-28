@@ -86,12 +86,8 @@ public class Message
 		  byte[] receivedType = new byte[1];
 		  int index;
 		  index = input.read(receivedLength);
-		  if(index == -1)
-			  throw new IOException();
 		  messageLength = ByteIntConversion.byteArrayToInt(receivedLength);
 		  index = input.read(receivedType);
-		  if(index == -1)
-			  throw new IOException();
 		  messageType = receivedType[0];
 		  if(messageLength > 1){
 			  messagePayload = new byte[messageLength - 1];
@@ -101,8 +97,6 @@ public class Message
 		  }
 		  if(messagePayload != null){
 			  index = input.read(messagePayload);
-			  if(index == -1)
-				  throw new IOException();
 		  }
 		//Receive message length
 		  /*while(counter < 4){
