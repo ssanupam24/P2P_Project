@@ -61,7 +61,7 @@ public class OptUnchoke implements Callable<Object> {
 				break;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
-				if ((bits.checkPiecesInterested(neighborArray[index].getBitField())) && (neighborArray[index].getNeighborChokedState().get() == 0)){
+				if ((neighborArray[index].getBitField().checkPiecesInterested(bits)) && (neighborArray[index].getNeighborChokedState().get() == 0)){
 					flag = true;
 				}
 			}
@@ -99,8 +99,8 @@ public class OptUnchoke implements Callable<Object> {
 							m.setType(Message.choke);
 							m.setPayload(null);
 							m.sendMessage(output);
-							break;
 					}
+					break;
 				}
 			}
 		}

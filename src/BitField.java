@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.Random;
+
 /*
  * This class keeps track of the Pieces that are downloaded from the peers.
  * @author Anupam
@@ -117,16 +120,23 @@ public class BitField {
 	}
 	//Check if the interested piece is downloaded then set the flag to true in bitfield array
 	public synchronized int setInterestedPiece(BitField bf){
+		ArrayList<Integer> randomPieces = new ArrayList<Integer>();
+		Random randomGenerator = new Random();
 		for(int i = 0; i < totPieces; i++){
 			if((bitPieceIndex[i] == false) && (bf.bitPieceIndex[i] == true)){
-				bitPieceIndex[i] = true;
-				countFinishedPieces++;
-				if(countFinishedPieces == totPieces)
-					finished = true;
-				return i;
+				randomPieces.add(i);
 			}
 		}
-		return -1;
+		if(randomPieces.size() == 0)
+			return -1;
+		else {
+			int counter = randomGenerator.nextInt(randomPieces.size()); 
+			bitPieceIndex[randomPieces.get(counter)] = true;
+			countFinishedPieces++;
+			if(countFinishedPieces == totPieces)
+				finished = true;
+			return randomPieces.get(counter);
+		}
 	}
 	
 }

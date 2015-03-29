@@ -183,22 +183,25 @@ public class peerProcess implements Runnable{
 			if(fullFile) {
 				System.out.println("Choose pref neighbors");
 				counter = 0;
-				for(int k = 0; k < neighborInfo.length && counter <= peerConfigs.getPrefNeighbors(); k++){
-					if(bitfield.checkPiecesInterested(neighborInfo[k].getBitField())){
+				for(int k = 0; k < neighborInfo.length && counter < peerConfigs.getPrefNeighbors(); k++){
+					if(neighborInfo[k].getBitField().checkPiecesInterested(bitfield)){
 						counter++;
 					}
 				}
-				
 				while(counter != 0) {
 					index = randomGenerator.nextInt(neighborInfo.length);
-					if ((bitfield.checkPiecesInterested(neighborInfo[index].getBitField()))) {
-						prefList.add(index);
+					if ((neighborInfo[index].getBitField().checkPiecesInterested(bitfield))) {
+						prefNeighborList.put(neighborInfo[index].getPeerId(),index);
 						counter--;
 					}
 				}
 				System.out.println("Before future for loop");
-				for(int i = 0; i < prefList.size(); i++){
-					Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[prefList.get(i)],log,
+				Set set = prefNeighborList.entrySet();
+				Iterator it = set.iterator();
+				while (it.hasNext()) {
+					Map.Entry m = (Map.Entry) it.next();
+					prefList.add((Integer)m.getKey());
+					Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[(Integer) m.getValue()],log,
 							neighborInfo, unchokeInterval, filePointer));
 					uploadList.add(uploadFuture);
 				}
@@ -214,7 +217,7 @@ public class peerProcess implements Runnable{
 				System.out.println("Choose pref neighbors");
 				// Check all the download rate and select preferred neighbors
 				for (int i = 0; i < neighborInfo.length; i++) {
-					if (bitfield.checkPiecesInterested(neighborInfo[i].getBitField())) {
+					if (neighborInfo[i].getBitField().checkPiecesInterested(bitfield)) {
 						prefNeighborList.put(neighborInfo[i].getdownloadRate(),i);
 					}
 				}

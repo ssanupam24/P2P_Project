@@ -87,8 +87,8 @@ public class Unchoke implements Callable<Object> {
 					m.setType(Message.choke);
 					m.setPayload(null);
 					m.sendMessage(output);
-					break;
 				}
+				break;
 			}
 		}
 		return new Object();
