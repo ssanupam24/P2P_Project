@@ -72,7 +72,7 @@ public class HaveMessage implements Callable<Object> {
 					m.sendMessage(output);
 				}
 			}
-			if(m.getType() == Message.interested){
+			else if(m.getType() == Message.interested){
 				logger.interestedLog(selfInfo.getPeerId());
 			}
 			else if(m.getType() == Message.notInterested){

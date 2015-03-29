@@ -20,7 +20,6 @@ import java.util.concurrent.Future;
 import java.net.*;
 
 public class peerProcess implements Runnable{
-	//TODO: Add logger after every task
 
 	public final int unchokeInterval;
 	public final int optimisticUnchokeInterval;
@@ -62,7 +61,7 @@ public class peerProcess implements Runnable{
 			if((peerConfigs.getHasWholeFile(i)) && (peerConfigs.getPeerList(i) == peer_id)){
 				fullFile = true;
 				bitfield.setAllBitsTrue();
-				System.out.println("Inside checking file and seting up bitfield");
+				System.out.println("Inside checking file and setting up bitfield");
 				break;
 			}
 		}
@@ -77,10 +76,10 @@ public class peerProcess implements Runnable{
 			ExecutorService havePool = Executors.newFixedThreadPool(totalNeighbors);
 			//Create a fixed thread executor service for optunchoke
 			ExecutorService optThread = Executors.newSingleThreadExecutor();
-			
-			for(int j = 0; j < neighborInfo.length; j++){
-				System.out.println("Submitted download and have");
-				NeighborInfo rec = neighborInfo[j];
+			if(!fullFile){
+				for(int j = 0; j < neighborInfo.length; j++){
+					System.out.println("Submitted download and have");
+					NeighborInfo rec = neighborInfo[j];
 					Future<Object> downFuture = downloadPool.submit(new Download(peer_id, neighborInfo, rec,
 									bitfield, filePointer, log));
 					downList.add(downFuture);
@@ -88,6 +87,17 @@ public class peerProcess implements Runnable{
 									neighborInfo, bitfield));
 					haveList.add(haveFuture);
 				
+				}
+			}
+			else{
+				for(int j = 0; j < neighborInfo.length; j++){
+					System.out.println("Submitted have");
+					NeighborInfo rec = neighborInfo[j];
+						Future<Object> haveFuture = havePool.submit(new HaveMessage(peer_id, rec, log,
+										neighborInfo, bitfield));
+						haveList.add(haveFuture);
+					
+				}
 			}
 			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
 			//Call unchoker function to start unchoker callable
@@ -95,10 +105,18 @@ public class peerProcess implements Runnable{
 			//Now check all the future objects and shut down threads if done with 
 			//receiving and sending all the pieces
 			optFuture.get();
-			for(int j = 0; j < neighborInfo.length; j++){
-				System.out.println("Waiting for return");
+			if(!fullFile) {
+				for(int j = 0; j < neighborInfo.length; j++){
+					System.out.println("Waiting for return in get");
 					downList.get(j).get();
 					haveList.get(j).get();
+				}
+			}
+			else{
+				for(int j = 0; j < neighborInfo.length; j++){
+					System.out.println("Waiting for return in get");
+					haveList.get(j).get();
+				}
 			}
 			log.completeDownloadLog();
 			downloadPool.shutdown();
@@ -163,19 +181,28 @@ public class peerProcess implements Runnable{
 			prefNeighborList.clear();
 			prefList.clear();
 			if(fullFile) {
+				System.out.println("Choose pref neighbors");
 				counter = 0;
-				while(counter < peerConfigs.getPrefNeighbors()) {
-					index = randomGenerator.nextInt(neighborInfo.length);
-					if ((neighborInfo[index].getBitField().checkPiecesInterested(bitfield))) {
-						prefList.add(index);
+				for(int k = 0; k < neighborInfo.length && counter <= peerConfigs.getPrefNeighbors(); k++){
+					if(bitfield.checkPiecesInterested(neighborInfo[k].getBitField())){
 						counter++;
 					}
 				}
+				
+				while(counter != 0) {
+					index = randomGenerator.nextInt(neighborInfo.length);
+					if ((bitfield.checkPiecesInterested(neighborInfo[index].getBitField()))) {
+						prefList.add(index);
+						counter--;
+					}
+				}
+				System.out.println("Before future for loop");
 				for(int i = 0; i < prefList.size(); i++){
 					Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[prefList.get(i)],log,
 							neighborInfo, unchokeInterval, filePointer));
 					uploadList.add(uploadFuture);
 				}
+				System.out.println("After future for loop");
 				log.changeOfPreferredNeighbourLog(prefList);
 				// Wait for the future objects here till the upload threads
 				// complete their execution
@@ -184,9 +211,10 @@ public class peerProcess implements Runnable{
 				}
 			}
 			else {
+				System.out.println("Choose pref neighbors");
 				// Check all the download rate and select preferred neighbors
 				for (int i = 0; i < neighborInfo.length; i++) {
-					if (neighborInfo[i].getBitField().checkPiecesInterested(bitfield)) {
+					if (bitfield.checkPiecesInterested(neighborInfo[i].getBitField())) {
 						prefNeighborList.put(neighborInfo[i].getdownloadRate(),i);
 					}
 				}
@@ -194,6 +222,7 @@ public class peerProcess implements Runnable{
 				Iterator it = set.iterator();
 				// Start the threads for those neighbors
 				counter = 0;
+				System.out.println("Before future while");
 				while (it.hasNext()) {
 					Map.Entry m = (Map.Entry) it.next();
 					neighborInfo[(Integer) m.getValue()].resetDownload();
@@ -209,6 +238,7 @@ public class peerProcess implements Runnable{
 					uploadList.add(uploadFuture);
 					counter++;
 				}
+				System.out.println("After future while");
 				log.changeOfPreferredNeighbourLog(prefList);
 				// Wait for the future objects here till the upload threads
 				// complete their execution

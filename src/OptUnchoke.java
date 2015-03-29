@@ -61,7 +61,7 @@ public class OptUnchoke implements Callable<Object> {
 				break;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
-				if ((neighborArray[index].getBitField().checkPiecesInterested(bits))){
+				if ((bits.checkPiecesInterested(neighborArray[index].getBitField())) && (neighborArray[index].getNeighborChokedState().get() == 0)){
 					flag = true;
 				}
 			}
@@ -76,9 +76,6 @@ public class OptUnchoke implements Callable<Object> {
 					m.setPayload(null);
 					m.sendMessage(output);
 			}
-			//Change the value of the choke state to OptUnchoke if preferred
-			if(neighborArray[index].getNeighborChokedState().get() == 1)
-				neighborArray[index].getNeighborChokedState().set(2);
 			
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
