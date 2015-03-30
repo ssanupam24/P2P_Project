@@ -6,13 +6,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,8 +25,6 @@ public class peerProcess implements Runnable{
 	public final int optimisticUnchokeInterval;
 	//Add all the interested neighbors in the below variable if you have the complete file
 	//Do the unchoke only for these neighbors and select it randomly
-	//public static ArrayList <NeighborInfo>  unchokedInterested;  //List of UNCHOKED neighbours who would be interested. 
-	//public static int optimisticUnchokedPeer;
 
 	private final int peer_id;
 	private BitField bitfield;
@@ -69,8 +67,8 @@ public class peerProcess implements Runnable{
 			setupNeighborAndSelfInfo();
 			//The doomsday thread starts now. Good Luck!!!
 			System.out.println("Thread spawning starts");
-			ArrayList<Future<Object>> downList = new ArrayList<Future<Object>>();
-			ArrayList<Future<Object>> haveList = new ArrayList<Future<Object>>();
+			Vector<Future<Object>> downList = new Vector<Future<Object>>();
+			Vector<Future<Object>> haveList = new Vector<Future<Object>>();
 			//Create executor services for download and have.
 			ExecutorService downloadPool = Executors.newFixedThreadPool(totalNeighbors);
 			ExecutorService havePool = Executors.newFixedThreadPool(totalNeighbors);
@@ -153,14 +151,14 @@ public class peerProcess implements Runnable{
 	public void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
 		System.out.println("Uploading process starts");
-		ArrayList<Integer> prefList = new ArrayList<Integer>();
+		Vector<Integer> prefList = new Vector<Integer>();
 		TreeMap prefNeighborList = new TreeMap(Collections.reverseOrder());
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		boolean finished;
 		Random randomGenerator = new Random();
 		int counter;
 		int index;
-		ArrayList<Future<Object>> uploadList = new ArrayList<Future<Object>>();
+		Vector<Future<Object>> uploadList = new Vector<Future<Object>>();
 		Message m1 = new Message();
 		while(true){
 			finished = true;

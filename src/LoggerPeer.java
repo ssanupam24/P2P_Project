@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Vector;
 
 /*
  * @author Abhishek
@@ -88,7 +89,7 @@ public class LoggerPeer
 		writeToFile(str);
 	}
 	
-	public synchronized void changeOfPreferredNeighbourLog(ArrayList<Integer> prefList)
+	public synchronized void changeOfPreferredNeighbourLog(Vector<Integer> prefList)
 	{
 		String peersArr = "";
 		for(int peer : prefList){
