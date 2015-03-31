@@ -71,7 +71,7 @@ public class BitField {
 	}
 	
 	//This function is used to change a bit field to binary string of 0's and 1's just for verification.
-	/*public synchronized String changeBitToString(){
+	public synchronized String changeBitToString(){
 		String result = null;
 		for(int i = 0; i < totPieces; i++){
 			if(bitPieceIndex[i] == true)
@@ -80,7 +80,7 @@ public class BitField {
 				result += "0";
 		}
 		return result;
-	}*/
+	}
 	
 	public synchronized boolean getFinished(){
 		return finished;

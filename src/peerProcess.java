@@ -188,12 +188,11 @@ public class peerProcess implements Runnable{
 				}
 				while(counter != 0) {
 					index = randomGenerator.nextInt(neighborInfo.length);
-					while(prefNeighborList.containsKey(neighborInfo[index].getPeerId()))
+					while(prefNeighborList.containsKey(neighborInfo[index].getPeerId()) || !neighborInfo[index].getBitField().checkPiecesInterested(bitfield)) {
 						index = randomGenerator.nextInt(neighborInfo.length);
-					if ((neighborInfo[index].getBitField().checkPiecesInterested(bitfield))) {
-						prefNeighborList.put(neighborInfo[index].getPeerId(),index);
-						counter--;
 					}
+					prefNeighborList.put(neighborInfo[index].getPeerId(),index);
+					counter--;
 				}
 				System.out.println("Before future for loop");
 				Set set = prefNeighborList.entrySet();
@@ -206,7 +205,8 @@ public class peerProcess implements Runnable{
 					uploadList.add(uploadFuture);
 				}
 				System.out.println("After future for loop");
-				log.changeOfPreferredNeighbourLog(prefList);
+				if(prefList.size() != 0)
+					log.changeOfPreferredNeighbourLog(prefList);
 				// Wait for the future objects here till the upload threads
 				// complete their execution
 				for (Future<Object> f : uploadList) {
@@ -243,7 +243,8 @@ public class peerProcess implements Runnable{
 						break;
 				}
 				System.out.println("After future while");
-				log.changeOfPreferredNeighbourLog(prefList);
+				if(prefList.size() != 0)
+					log.changeOfPreferredNeighbourLog(prefList);
 				// Wait for the future objects here till the upload threads
 				// complete their execution
 				for (Future<Object> f : uploadList) {
@@ -362,6 +363,7 @@ public class peerProcess implements Runnable{
 			bf.setBitFromByte(m.getPayload());
 			neighborInfo[index].setBitField(bf);
 			
+			System.out.println(neighborInfo[index].getBitField().changeBitToString());
 			// Send bitfield in response
 			m.setType(Message.bitfield);
 			m.setPayload(bitfield.changeBitToByteField());
@@ -440,6 +442,8 @@ public class peerProcess implements Runnable{
 			BitField bf = new BitField(peerConfigs.getTotalPieces());
 			bf.setBitFromByte(m.getPayload());
 			otherInfo.setBitField(bf);
+			
+			System.out.println(otherInfo.getBitField().changeBitToString());
 		}
 		// Send an interested or notInterested message depending on the
 		// received bitfield contents.
