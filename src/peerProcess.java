@@ -188,6 +188,8 @@ public class peerProcess implements Runnable{
 				}
 				while(counter != 0) {
 					index = randomGenerator.nextInt(neighborInfo.length);
+					while(prefNeighborList.containsKey(neighborInfo[index].getPeerId()))
+						index = randomGenerator.nextInt(neighborInfo.length);
 					if ((neighborInfo[index].getBitField().checkPiecesInterested(bitfield))) {
 						prefNeighborList.put(neighborInfo[index].getPeerId(),index);
 						counter--;
@@ -217,6 +219,7 @@ public class peerProcess implements Runnable{
 				for (int i = 0; i < neighborInfo.length; i++) {
 					if (neighborInfo[i].getBitField().checkPiecesInterested(bitfield)) {
 						prefNeighborList.put(neighborInfo[i].getdownloadRate(),i);
+						System.out.println("This client that did not start with the full file found that peer " + neighborInfo[i].getPeerId() + " is interested in it.");
 					}
 				}
 				Set set = prefNeighborList.entrySet();
@@ -227,8 +230,6 @@ public class peerProcess implements Runnable{
 				while (it.hasNext()) {
 					Map.Entry m = (Map.Entry) it.next();
 					neighborInfo[(Integer) m.getValue()].resetDownload();
-					if (counter >= peerConfigs.getPrefNeighbors())
-						break;
 					prefList.add(neighborInfo[(Integer) m.getValue()]
 							.getPeerId());
 					// Check if choked perhaps?
@@ -238,6 +239,8 @@ public class peerProcess implements Runnable{
 									neighborInfo, unchokeInterval, filePointer));
 					uploadList.add(uploadFuture);
 					counter++;
+					if (counter >= peerConfigs.getPrefNeighbors())
+						break;
 				}
 				System.out.println("After future while");
 				log.changeOfPreferredNeighbourLog(prefList);

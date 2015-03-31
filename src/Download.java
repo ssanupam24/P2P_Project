@@ -64,6 +64,7 @@ public class Download implements Callable<Object> {
 							m.setType(Message.request);
 							m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));
 							m.sendMessage(output);
+							logger.requestLog(selfInfo.getPeerId(), false);
 							m.receiveMessage(input);
 							//If choke received then set the piece to false in bitfield to download it later
 							if(m.getType() == Message.choke){
@@ -77,7 +78,7 @@ public class Download implements Callable<Object> {
 								file.writeFile(p);
 								bits.setBitToTrue(pieceIndex);
 								selfInfo.incdownloadRate();
-								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, selfInfo.getdownloadRate());
+								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, selfInfo.getBitField().getCountFinishedPieces());
 								//Create a have message and send it to all peers
 								m.setType(Message.have);
 								m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));

@@ -61,9 +61,10 @@ public class OptUnchoke implements Callable<Object> {
 				break;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
-				if ((neighborArray[index].getBitField().checkPiecesInterested(bits)) && (neighborArray[index].getNeighborChokedState().get() == 0)){
-					flag = true;
+				while((neighborArray[index].getNeighborChokedState().get() != 0) || (!neighborArray[index].getBitField().checkPiecesInterested(bits))){
+					index = randomGenerator.nextInt(neighborArray.length);
 				}
+				flag = true;
 			}
 			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
 			sock = neighborArray[index].getUploadSocket();
@@ -80,6 +81,15 @@ public class OptUnchoke implements Callable<Object> {
 			
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
+				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
+					// if the neighbor is your OptUnchoked neighbor, then choke and set the choke state
+					if(neighborArray[index].getNeighborChokedState().compareAndSet(2, 0)){
+							m.setType(Message.choke);
+							m.setPayload(null);
+							m.sendMessage(output);
+					}
+					break;
+				}
 				m.receiveMessage(input);
 				System.out.println("Did not get stuck waiting to receive a message in OptUnchoke.");
 				//Add the not interested thing here
@@ -90,20 +100,12 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				}
 				if(m.getType() == Message.request){
+					logger.requestLog(neighborArray[index].getPeerId(), true);
 					index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
 					Piece newPiece = file.readFile(index1);
 					m.setType(Message.piece);
 					m.setPayload(newPiece.getPieceContent());
 					m.sendMessage(output);
-				}
-				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
-					// if the neighbor is your OptUnchoked neighbor, then choke and set the choke state
-					if(neighborArray[index].getNeighborChokedState().compareAndSet(2, 0)){
-							m.setType(Message.choke);
-							m.setPayload(null);
-							m.sendMessage(output);
-					}
-					break;
 				}
 			}
 		}

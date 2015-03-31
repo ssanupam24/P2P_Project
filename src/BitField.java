@@ -86,6 +86,10 @@ public class BitField {
 		return finished;
 	}
 	
+	public synchronized int getCountFinishedPieces(){
+		return countFinishedPieces;
+	}
+	
 	public synchronized void setBitToTrue(int index){
 		if(bitPieceIndex[index] == false){
 			bitPieceIndex[index] = true;
@@ -130,7 +134,7 @@ public class BitField {
 		}
 		if(randomPieces.size() == 0)
 			return -1;
-		else {
+		else if(randomPieces.size() > 0){
 			int counter = randomGenerator.nextInt(randomPieces.size()); 
 			bitPieceIndex[randomPieces.get(counter)] = true;
 			countFinishedPieces++;
@@ -138,6 +142,7 @@ public class BitField {
 				finished = true;
 			return randomPieces.get(counter);
 		}
+		return -1;
 	}
 	
 }

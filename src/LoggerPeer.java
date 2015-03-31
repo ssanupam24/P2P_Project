@@ -146,4 +146,15 @@ public class LoggerPeer
 		String str = getTime() + ": Peer " + peerId + " has downloaded the complete file.\n";
 		writeToFile(str);
 	}
+	
+	// TODO: Remove later. Just for debugging purposes
+	public synchronized void requestLog(int peer_2, boolean flag)
+	{
+		String str;
+		if(flag)
+			str = getTime() + ": Peer " + peerId + " has received a request from " + peer_2 + ".\n";
+		else
+			str = getTime() + ": Peer " + peerId + " has sent a request to " + peer_2 + ".\n";
+		writeToFile(str);
+	}
 	}
