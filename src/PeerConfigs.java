@@ -157,8 +157,14 @@ public class PeerConfigs {
 			if(in != null)
 				in.close();
 			
-			totalPieces = sizeOfFile/sizeOfPiece;
-			sizeOfLastPiece = sizeOfFile % sizeOfPiece;
+			if(sizeOfFile % sizeOfPiece == 0) {
+				sizeOfLastPiece = sizeOfPiece;
+				totalPieces = sizeOfFile/sizeOfPiece;
+			}
+			else{
+				sizeOfLastPiece = sizeOfFile % sizeOfPiece;
+				totalPieces = sizeOfFile/sizeOfPiece + 1;
+			}
 			
 			//printCommonSettings();
 		}
