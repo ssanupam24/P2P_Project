@@ -148,11 +148,11 @@ public class peerProcess implements Runnable{
 		//printNeighborInfo();	
 	}
 	// Need to add flag if you have the entire file to skip the download and have callable thread
-	public void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
+	public synchronized void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
 		System.out.println("Uploading process starts");
 		Vector<Integer> prefList = new Vector<Integer>();
-		TreeMap prefNeighborList = new TreeMap(Collections.reverseOrder());
+		TreeMap<Integer, Integer> prefNeighborList = new TreeMap<Integer, Integer>(Collections.reverseOrder());
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		boolean finished;
 		Random randomGenerator = new Random();
@@ -197,7 +197,7 @@ public class peerProcess implements Runnable{
 				Set set = prefNeighborList.entrySet();
 				Iterator it = set.iterator();
 				while (it.hasNext()) {
-					Map.Entry m = (Map.Entry) it.next();
+					Map.Entry<Integer, Integer> m = (Map.Entry) it.next();
 					prefList.add((Integer)m.getKey());
 					Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[(Integer) m.getValue()],log,
 							neighborInfo, unchokeInterval, filePointer));
@@ -262,7 +262,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setupNeighborAndSelfInfo() throws Exception
+	public synchronized void setupNeighborAndSelfInfo() throws Exception
 	{
 		int currPeerID;
 		int peerIndex = 0;  // index of the peer initializing the NeighborInfo array
@@ -309,15 +309,20 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setSelfInitialization(ServerSocket uploadServerSocket, 
+	public synchronized void setSelfInitialization(ServerSocket uploadServerSocket, 
 			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws Exception
 	{
 		System.out.println("Server started");
 		neighborInfo[index] = new NeighborInfo(peerConfigs.getTotalPieces());
 		// Sets up sockets to access the server sockets' I/O streams
-		Socket uploadSocket = uploadServerSocket.accept();
+		// TODO: Originally 
 		Socket downloadSocket = downloadServerSocket.accept();
+		Socket uploadSocket = uploadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
+		
+		System.out.println("Server socket info for peer " + neighborInfo[index].getPeerId() + " from peer " 
+		+ peer_id + ":\nUpload Socket: " + uploadSocket.getPort() + "\nDownload Socket: " + downloadSocket.getPort()
+		+ "\nHave Socket: " + haveSocket.getPort());
 		
 		// Put the sockets in the neighborInfo object
 		neighborInfo[index].setUploadSocket(uploadSocket);
@@ -382,7 +387,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 	
-	public void setOthersInitialization(NeighborInfo otherInfo, String host, int downloadPort, int uploadPort, int havePort)throws Exception
+	public synchronized void setOthersInitialization(NeighborInfo otherInfo, String host, int downloadPort, int uploadPort, int havePort)throws Exception
 	{
 		int neighborID = otherInfo.getPeerId();
 		InputStream input;
@@ -392,7 +397,12 @@ public class peerProcess implements Runnable{
 		Socket uploadClientSocket = new Socket(host, downloadPort);
 		Socket downloadClientSocket = new Socket(host, uploadPort);
 		Socket haveClientSocket = new Socket(host, havePort);
-	
+		
+		System.out.println("uploadPort: " + downloadPort + "downloadPort: " + uploadPort + "havePort: " + havePort);
+		System.out.println("Client socket info for peer " + otherInfo.getPeerId() + " from peer " 
+		+ peer_id + ":\nUpload Socket: " + uploadClientSocket.getPort() + "\nDownload Socket: " + downloadClientSocket.getPort()
+		+ "\nHave Socket: " + haveClientSocket.getPort());
+		
 		// put client sockets in the neighborInfo array
 		otherInfo.setDownloadSocket(downloadClientSocket);
 		otherInfo.setUploadSocket(uploadClientSocket);
@@ -449,7 +459,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 
-	public boolean handshakeValid(HandshakeMessage hs, int neighborID)
+	public synchronized boolean handshakeValid(HandshakeMessage hs, int neighborID)
 	{
 		int peerID = hs.getPeerID();
 		

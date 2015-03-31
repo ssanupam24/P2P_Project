@@ -44,6 +44,7 @@ public class Unchoke implements Callable<Object> {
 		//Send Unchoke to the peer that created this callable and then start uploading
 		//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 		if(selfInfo.getNeighborChokedState().compareAndSet(0, 1)){
+			System.out.println("Unchoked from unchoked callable");
 			m.setPayload(null);
 			m.setType(Message.unchoke);
 			m.sendMessage(output);
