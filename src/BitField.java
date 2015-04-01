@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * This class keeps track of the Pieces that are downloaded from the peers.
@@ -72,7 +73,7 @@ public class BitField {
 	
 	//This function is used to change a bit field to binary string of 0's and 1's just for verification.
 	public synchronized String changeBitToString(){
-		String result = null;
+		String result = "";
 		for(int i = 0; i < totPieces; i++){
 			if(bitPieceIndex[i] == true)
 				result += "1";
@@ -125,6 +126,7 @@ public class BitField {
 	}
 	//Check if the interested piece is downloaded then set the flag to true in bitfield array
 	public synchronized int setInterestedPiece(BitField bf){
+		/*
 		Vector<Integer> randomPieces = new Vector<Integer>();
 		Random randomGenerator = new Random();
 		for(int i = 0; i < totPieces; i++){
@@ -143,6 +145,18 @@ public class BitField {
 			return randomPieces.get(counter);
 		}
 		return -1;
+		*/
+		for(int i = 0; i < totPieces; i++){
+			if((bitPieceIndex[i] == false) && (bf.bitPieceIndex[i] == true)){
+				bitPieceIndex[i] = true;
+				countFinishedPieces++;
+				if(countFinishedPieces == totPieces)
+					finished = true;
+				return i;
+			}
+		}
+	
+			return -1;
 	}
 	
 }

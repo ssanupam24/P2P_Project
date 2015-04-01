@@ -49,6 +49,7 @@ public class Download implements Callable<Object> {
 							m.setType(Message.notInterested);
 							m.setPayload(null);
 							m.sendMessage(output);
+							System.out.println("Not interested in pieces from " + selfInfo.getPeerId() + ".\n");
 							break;
 						}
 						else{
@@ -70,13 +71,12 @@ public class Download implements Callable<Object> {
 								file.writeFile(p);
 								bits.setBitToTrue(pieceIndex);
 								selfInfo.incdownloadRate();
-								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, selfInfo.getBitField().getCountFinishedPieces());
+								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, bits.getCountFinishedPieces());
 								//Create a have message and send it to all peers
 								m.setType(Message.have);
 								m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));
 								for(int i = 0; i < neighborArray.length; i++) {
-									if(neighborArray[i].getPeerId() != peerId)
-										m.sendMessage(neighborArray[i].getHaveSocket().getOutputStream());
+									m.sendMessage(neighborArray[i].getHaveSocket().getOutputStream());
 								}
 							}
 						}

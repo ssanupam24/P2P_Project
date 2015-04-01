@@ -58,6 +58,15 @@ public class Unchoke implements Callable<Object> {
 		while(true){
 			//Add the not interested message condition
 			startTimer = System.currentTimeMillis();
+			if((System.currentTimeMillis() - startTimer) >= (time * 1000)){
+				// if the neighbor is not your preferred neighbor, then choke
+				if(selfInfo.getNeighborChokedState().compareAndSet(1, 0)) {
+					m.setType(Message.choke);
+					m.setPayload(null);
+					m.sendMessage(output);
+				}
+				break;
+			}
 			m.receiveMessage(input);
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
@@ -82,15 +91,6 @@ public class Unchoke implements Callable<Object> {
 				m.setPayload(p.getPieceContent());
 				m.setType(Message.piece);
 				m.sendMessage(output);
-			}
-			if((System.currentTimeMillis() - startTimer) >= (time * 1000)){
-				// if the neighbor is not your preferred neighbor, then choke
-				if(selfInfo.getNeighborChokedState().compareAndSet(1, 0)) {
-					m.setType(Message.choke);
-					m.setPayload(null);
-					m.sendMessage(output);
-				}
-				break;
 			}
 		}
 		return new Object();

@@ -59,7 +59,7 @@ public class HaveMessage implements Callable<Object> {
 			if(m.getType() == Message.have){
 				pieceIndex = ByteIntConversion.byteArrayToInt(m.getPayload());
 				selfInfo.getBitField().setBitToTrue(pieceIndex);
-				logger.haveLog(selfInfo.getPeerId(), pieceIndex);
+				//logger.haveLog(selfInfo.getPeerId(), pieceIndex);
 				//Send interested/not message here
 				if(bits.checkPiecesInterested(selfInfo.getBitField())){
 					m.setType(Message.interested);

@@ -63,6 +63,7 @@ public class OptUnchoke implements Callable<Object> {
 				index = randomGenerator.nextInt(neighborArray.length);
 				while((neighborArray[index].getNeighborChokedState().get() != 0) || (!neighborArray[index].getBitField().checkPiecesInterested(bits))){
 					index = randomGenerator.nextInt(neighborArray.length);
+					break;
 				}
 				flag = true;
 			}

@@ -97,12 +97,12 @@ public class peerProcess implements Runnable{
 					
 				}
 			}
-			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
+			//Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
 			//Call unchoker function to start unchoker callable
 			unchokerProcess();
 			//Now check all the future objects and shut down threads if done with 
 			//receiving and sending all the pieces
-			optFuture.get();
+			//optFuture.get();
 			if(!fullFile) {
 				for(int j = 0; j < neighborInfo.length; j++){
 					System.out.println("Waiting for return in get");
@@ -190,6 +190,7 @@ public class peerProcess implements Runnable{
 					index = randomGenerator.nextInt(neighborInfo.length);
 					while(prefNeighborList.containsKey(neighborInfo[index].getPeerId()) || !neighborInfo[index].getBitField().checkPiecesInterested(bitfield)) {
 						index = randomGenerator.nextInt(neighborInfo.length);
+						break;
 					}
 					prefNeighborList.put(neighborInfo[index].getPeerId(),index);
 					counter--;
