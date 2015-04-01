@@ -30,20 +30,12 @@ public class Download implements Callable<Object> {
 		InputStream input = s.getInputStream();
 		OutputStream output = s.getOutputStream();
 		Message m = new Message();
-		boolean finished;
 		int pieceIndex;
 		//Remove the check for all the neighbors and add the check for yourself if you are done with downloading
 		while(true){
-			finished = true;
-			//Check whether all the peers have downloaded the entire file or not
-			for(int i = 0; i < neighborArray.length; i++){
-				if(!neighborArray[i].hasFinished())
-					finished = false;
-			}
-			//if yes then break from the loop and return null
-			if(finished)
+			//TODO: Don't need to check the neighbor's download, check yours and quit from the callable
+			if(bits.getFinished())
 				break;
-			
 			try{
 				m.receiveMessage(input);
 				if(m.getType() == Message.unchoke){
