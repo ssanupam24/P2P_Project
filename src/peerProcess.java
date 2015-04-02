@@ -195,7 +195,7 @@ public class peerProcess implements Runnable{
 				Set<Entry<Integer, Integer>> set = prefNeighborList.entrySet();
 				Iterator<Entry<Integer, Integer>> it = set.iterator();
 				while (it.hasNext()) {
-					Map.Entry<Integer, Integer> m = (Map.Entry) it.next();
+					Map.Entry<Integer, Integer> m = (Map.Entry<Integer, Integer>) it.next();
 					prefList.add((Integer)m.getKey());
 					Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[(Integer) m.getValue()],log,
 							neighborInfo, unchokeInterval, filePointer));
@@ -225,7 +225,7 @@ public class peerProcess implements Runnable{
 				counter = 0;
 				System.out.println("Before future while");
 				while (it.hasNext()) {
-					Map.Entry m = (Map.Entry) it.next();
+					Map.Entry<Integer, Integer> m = (Map.Entry<Integer, Integer>) it.next();
 					neighborInfo[(Integer) m.getValue()].resetDownload();
 					prefList.add(neighborInfo[(Integer) m.getValue()]
 							.getPeerId());
