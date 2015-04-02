@@ -59,8 +59,6 @@ public class Unchoke implements Callable<Object> {
 		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
 		//for those neighbors, seems like it's efficient
 		while(true){
-			//Add the not interested message condition		
-			m.receiveMessage(input);
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborArray.length; i++){
@@ -71,7 +69,9 @@ public class Unchoke implements Callable<Object> {
 			}
 			//if yes then break from the loop and return an Object to keep track of the task in peerProcess
 			if(finished)
-				break;
+				return new Object();
+			//Add the not interested message condition		
+			m.receiveMessage(input);
 			if(m.getType() == Message.notInterested){
 				logger.notInterestedLog(selfInfo.getPeerId());
 				//break or do something

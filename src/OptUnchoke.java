@@ -41,6 +41,7 @@ public class OptUnchoke implements Callable<Object> {
 		Socket sock;
 		InputStream input;
 		OutputStream output;
+		int counter = 0;
 		try {
 		//PeerInfo.optimisticUnchokedPeer = PeerInfo.chokedInterested.get(index);
 		while(true) {
@@ -57,13 +58,26 @@ public class OptUnchoke implements Callable<Object> {
 			}
 			//if yes then break from the loop and return null
 			if(finished)
-				break;
+				return new Object();
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if((neighborArray[index].getNeighborChokedState().get() == 0) && (neighborArray[index].getBitField().checkPiecesInterested(bits))){
 					flag = true;
-				}	
+					finished = false;
+				}
+				counter = 0;
+				for(int i = 0; i < neighborArray.length; i++){
+					if(neighborArray[i].hasFinished()) {
+						counter++;
+					}
+				}
+				if(counter == neighborArray.length){
+					finished = true;
+					flag = true;
+				}
 			}
+			if(finished)
+				return new Object();
 			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
 			sock = neighborArray[index].getUploadSocket();
 			input = sock.getInputStream();
@@ -80,7 +94,18 @@ public class OptUnchoke implements Callable<Object> {
 			
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
-				
+				//Check to see if all the neighbors are done downloading
+				finished = true;
+				//Check whether all the peers have downloaded the entire file or not
+				for(int i = 0; i < neighborArray.length; i++){
+					if(!neighborArray[i].hasFinished()) {
+						finished = false;
+						break;
+					}
+				}
+				//if yes then break from the loop and return null
+				if(finished)
+					return new Object();
 				m.receiveMessage(input);
 				System.out.println("Did not get stuck waiting to receive a message in OptUnchoke.");
 				//Add the not interested thing here

@@ -179,13 +179,15 @@ public class peerProcess implements Runnable{
 				System.out.println("Choose pref neighbors");
 				counter = 0;
 				for(int k = 0; k < neighborInfo.length && counter < peerConfigs.getPrefNeighbors(); k++){
-					if(neighborInfo[k].getBitField().checkPiecesInterested(bitfield)){
+					if((neighborInfo[k].getBitField().checkPiecesInterested(bitfield)) && 
+							(neighborInfo[k].getNeighborChokedState().get() != 2)){
 						counter++;
 					}
 				}
 				while(counter != 0) {
 					index = randomGenerator.nextInt(neighborInfo.length);
-					while(prefNeighborList.containsKey(neighborInfo[index].getPeerId()) || !neighborInfo[index].getBitField().checkPiecesInterested(bitfield)) {
+					while(prefNeighborList.containsKey(neighborInfo[index].getPeerId()) || (!neighborInfo[index].getBitField().checkPiecesInterested(bitfield))
+							|| (neighborInfo[index].getNeighborChokedState().get() == 2)) {
 						index = randomGenerator.nextInt(neighborInfo.length);
 					}
 					prefNeighborList.put(neighborInfo[index].getPeerId(),index);
@@ -206,15 +208,18 @@ public class peerProcess implements Runnable{
 					log.changeOfPreferredNeighbourLog(prefList);
 				// Wait for the future objects here till the upload threads
 				// complete their execution
-				for (Future<Object> f : uploadList) {
-					f.get();
+				if(uploadList.size() != 0) {
+					for (Future<Object> f : uploadList) {
+						f.get();
+					}
 				}
 			}
 			else {
 				System.out.println("Choose pref neighbors");
 				// Check all the download rate and select preferred neighbors
 				for (int i = 0; i < neighborInfo.length; i++) {
-					if (neighborInfo[i].getBitField().checkPiecesInterested(bitfield)) {
+					if ((neighborInfo[i].getBitField().checkPiecesInterested(bitfield))&& 
+							(neighborInfo[i].getNeighborChokedState().get() != 2)) {
 						prefNeighborList.put(neighborInfo[i].getdownloadRate(),i);
 						System.out.println("This client that did not start with the full file found that peer " + neighborInfo[i].getPeerId() + " is interested in it.");
 					}
@@ -243,8 +248,10 @@ public class peerProcess implements Runnable{
 					log.changeOfPreferredNeighbourLog(prefList);
 				// Wait for the future objects here till the upload threads
 				// complete their execution
-				for (Future<Object> f : uploadList) {
-					f.get();
+				if(uploadList.size() != 0){
+					for (Future<Object> f : uploadList) {
+						f.get();
+					}
 				}
 			}
 		}
