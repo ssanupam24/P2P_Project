@@ -21,33 +21,33 @@ public class Message
   public static final byte piece = 7;
   //public static final byte finish = 8; 
   
-  public int getLength()
+  public synchronized int getLength()
   {
     return messageLength;
   }
   
-  public byte getType()
+  public synchronized byte getType()
   {
     return messageType;
   }
   
-  public byte [] getPayload()
+  public synchronized byte [] getPayload()
   {
     return messagePayload;
   }
   
-  public void setLength(int length)
+  public synchronized void setLength(int length)
   {
     this.messageLength = length;
   }
   
-  public void setType(byte type)
+  public synchronized void setType(byte type)
   {
     this.messageType = type;
   }
   
   
-  public void setPayload(byte[] payload)
+  public synchronized void setPayload(byte[] payload)
   {
 	  this.messagePayload = payload;
   }

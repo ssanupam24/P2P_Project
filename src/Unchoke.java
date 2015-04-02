@@ -50,8 +50,11 @@ public class Unchoke implements Callable<Object> {
 			m.sendMessage(output);
 		}
 		//Change the value of the choke state to preferred if OptUnchoke
-		if(selfInfo.getNeighborChokedState().get() == 2)
-			selfInfo.getNeighborChokedState().set(1);
+		//For the time being
+		if(selfInfo.getNeighborChokedState().get() == 2){
+			return new Object();
+		}
+			//selfInfo.getNeighborChokedState().set(1);
 		long startTimer = System.currentTimeMillis();
 		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
 		//for those neighbors, seems like it's efficient

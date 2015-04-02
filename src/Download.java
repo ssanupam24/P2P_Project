@@ -33,10 +33,10 @@ public class Download implements Callable<Object> {
 		int pieceIndex;
 		//Remove the check for all the neighbors and add the check for yourself if you are done with downloading
 		while(true){
-			//TODO: Don't need to check the neighbor's download, check yours and quit from the callable
-			if(bits.getFinished())
-				break;
 			try{
+				//TODO: Don't need to check the neighbor's download, check yours and quit from the callable
+				if(bits.getFinished())
+					break;
 				m.receiveMessage(input);
 				if(m.getType() == Message.unchoke){
 					logger.unchokeLog(selfInfo.getPeerId());

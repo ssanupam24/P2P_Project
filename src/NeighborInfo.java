@@ -24,88 +24,88 @@ public class NeighborInfo {
 		bitField = new BitField(numPieces);
 		downloadRate = new AtomicInteger(0);
 	}
-	public int getPeerId(){
+	public synchronized int getPeerId(){
 		return peer_id;
 	}
-	public BitField getBitField(){
+	public synchronized BitField getBitField(){
 		return bitField;
 	}
-	public int getChokedByNeighborState(){
+	public synchronized int getChokedByNeighborState(){
 		return chokedByNeighborState.get();
 	}
-	public int getNeighborChokedStateValue(){
+	public synchronized int getNeighborChokedStateValue(){
 		return neighborChokedState.get();
 	}
-	public AtomicInteger getNeighborChokedState(){
+	public synchronized AtomicInteger getNeighborChokedState(){
 		return neighborChokedState;
 	}
-	public Socket getUploadSocket(){
+	public synchronized Socket getUploadSocket(){
 		return uploadSocket;
 	}
-	public Socket getDownloadSocket(){
+	public synchronized Socket getDownloadSocket(){
 		return downloadSocket;
 	}
-	public Socket getHaveSocket(){
+	public synchronized Socket getHaveSocket(){
 		return haveSocket;
 	}
-	public int getdownloadRate(){		
+	public synchronized int getdownloadRate(){		
 		return downloadRate.get();		
 	}		
-	public void resetDownload(){		
+	public synchronized void resetDownload(){		
 		downloadRate.set(0);		
 	}
-	public void setPeerID(int peer_id){		
+	public synchronized void setPeerID(int peer_id){		
 		this.peer_id = peer_id;		
 	}
-	public void setDownloadAmount(int amount){		
+	public synchronized void setDownloadAmount(int amount){		
 		downloadRate.set(amount);		
 	}
-	public void incdownloadRate(){		
+	public synchronized void incdownloadRate(){		
 		downloadRate.set(downloadRate.get() + 1);		
 	}
-	public void setNeighborChoked(){
+	public synchronized void setNeighborChoked(){
 		neighborChokedState.set(0);
 	}
-	public void setNeighborOptUnchoked(){
+	public synchronized void setNeighborOptUnchoked(){
 		neighborChokedState.set(2);
 	}
-	public void setNeighborPreferred(){
+	public synchronized void setNeighborPreferred(){
 		neighborChokedState.set(1);
 	}	
-	public void setChokedByNeighbor(){
+	public synchronized void setChokedByNeighbor(){
 		chokedByNeighborState.set(0);
 	}
-	public void setOptUnchokedByNeighbor(){
+	public synchronized void setOptUnchokedByNeighbor(){
 		chokedByNeighborState.set(2);
 	}
-	public void setPreferredByNeighbor(){
+	public synchronized void setPreferredByNeighbor(){
 		chokedByNeighborState.set(1);
 	}	
-	public void setBitField(BitField newBitField){
+	public synchronized void setBitField(BitField newBitField){
 		bitField = newBitField;
 	}
-	public void setBitField(byte[] BitFieldNew){
+	public synchronized void setBitField(byte[] BitFieldNew){
 		bitField.setBitFromByte(BitFieldNew);
 	}
-	public void setUploadSocket(Socket socket){
+	public synchronized void setUploadSocket(Socket socket){
 		uploadSocket = socket;
 	}
-	public void setDownloadSocket(Socket socket){
+	public synchronized void setDownloadSocket(Socket socket){
 		downloadSocket = socket;
 	}
-	public void setHaveSocket(Socket socket){
+	public synchronized void setHaveSocket(Socket socket){
 		haveSocket = socket;
 	}
-	public Boolean hasFinished(){
+	public synchronized Boolean hasFinished(){
 		return bitField.getFinished();
 	}
-	public void setBitInBitField(int index){
+	public synchronized void setBitInBitField(int index){
 		bitField.setBitToTrue(index);
 	}
-	public Boolean setChokedByNeighborState(int value, int newValue){
+	public synchronized Boolean setChokedByNeighborState(int value, int newValue){
 		return chokedByNeighborState.compareAndSet(value, newValue);
 	}
-	public Boolean setNeighborChokedState(int value, int newValue){
+	public synchronized Boolean setNeighborChokedState(int value, int newValue){
 		return neighborChokedState.compareAndSet(value, newValue);
 	}	
 }
