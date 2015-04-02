@@ -1,15 +1,8 @@
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 
 /*
  * @author Abhishek and Anupam
@@ -33,15 +26,24 @@ public class HandleFile{
 		}
 		this.filename = new RandomAccessFile(path + fileConfig.getFileName(), "rw");
 	}
+	//Return the file pointer to close the file
+	public synchronized RandomAccessFile getFile(){
+		return filename;
+	} 
 	//Write a piece in a file
 	public synchronized void writeFile(Piece p) throws IOException{
 		int size = fileConfig.getSizeOfPiece();
 		int offset;
-		//int len;
+		byte[] temp = p.getPieceContent();
+		int len;
 		offset = size * p.getPieceNum();
-		//len = p.getPieceContent().length;
+		len = p.getPieceContent().length;
 		filename.seek(offset);
-		filename.write(p.getPieceContent());
+		int i = 0;
+		while(i < len){
+			filename.writeByte(temp[i]);
+			i++;
+		}
 	}
 	//Read a piece from a file
 	public synchronized Piece readFile(int id) throws IOException{
@@ -54,7 +56,13 @@ public class HandleFile{
 		int offset = fileConfig.getSizeOfPiece() * id;
 		filename.seek(offset); //Shifts the pointer to the desired location
 		byte[] pieceContent = new byte[length];
-		filename.read(pieceContent); //It will read length bytes from the offset position
+		int i = 0;
+		while(i < length){
+			byte t = filename.readByte();
+			pieceContent[i] = t;
+			i++;
+		}
+		//filename.read(pieceContent); //It will read length bytes from the offset position
 		Piece p = new Piece(pieceContent, id);
 		return p;
 	}

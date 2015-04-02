@@ -56,7 +56,7 @@ public class Message
    * The format is as given below:
    * First 4 bytes length of the payload, next 1 byte message type and then the rest is payload
    */
-  public void sendMessage(OutputStream output) throws IOException
+  public synchronized void sendMessage(OutputStream output) throws IOException
   {
     
 	  try{
@@ -79,13 +79,13 @@ public class Message
    * The format is as given below:
    * First 4 bytes length of the payload, next 1 byte message type and then the rest is payload
    */
-  public void receiveMessage(InputStream input) throws IOException
+  public synchronized void receiveMessage(InputStream input) throws IOException
   {
 	  try{
 		  byte[] receivedLength = new byte[4];
 		  byte[] receivedType = new byte[1];
 		  int index;
-		  index = input.read(receivedLength);
+		  /*index = input.read(receivedLength);
 		  messageLength = ByteIntConversion.byteArrayToInt(receivedLength);
 		  index = input.read(receivedType);
 		  messageType = receivedType[0];
@@ -97,25 +97,33 @@ public class Message
 		  }
 		  if(messagePayload != null){
 			  index = input.read(messagePayload);
-		  }
+		  }*/
+		  int counter = 0;
 		//Receive message length
-		  /*while(counter < 4){
+		  while(counter < 4){
 			  index = input.read(receivedLength, counter, 4 - counter);
 			  counter += index;
 		  }
-		  //counter = 0;
+		  messageLength = ByteIntConversion.byteArrayToInt(receivedLength);
+		  counter = 0;
 		//Receive message type
 		  while(counter < 1){
 			  index = input.read(receivedType, counter, 1 - counter);
 			  counter += index;
 		  }
-		  
-		  //counter = 0;
+		  messageType = receivedType[0];
+		  if(messageLength > 1){
+			  messagePayload = new byte[messageLength - 1];
+		  }
+		  else {
+			  messagePayload = null;
+		  }
+		  counter = 0;
 		//Receive message payload
-		  while(counter < messageLength - 1){
-			  index = input.read(messagePayload, counter, messageLength - counter);
+		  while(counter < (messageLength - 1)){
+			  index = input.read(messagePayload, counter, messageLength - 1 - counter);
 			  counter += index;
-		  }*/
+		  }
 	  }
 	  catch(Exception e){
 		  e.printStackTrace();

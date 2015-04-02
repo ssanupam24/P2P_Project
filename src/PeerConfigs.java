@@ -80,6 +80,7 @@ public class PeerConfigs {
 	public ArrayList<Integer> getHavePortList(){
 		return havePortList;
 	}
+	
 	public ArrayList<Boolean> getHasWholeFile(){
 		return hasWholeFile;
 	}
@@ -188,7 +189,6 @@ public class PeerConfigs {
 			uploadPortList = new ArrayList<Integer>();
 			hasWholeFile = new ArrayList<Boolean>();
 			havePortList = new ArrayList<Integer>();
-			
 			in = new FileInputStream(peerConfigPath);
 			streamReader = new BufferedReader(new InputStreamReader(in));
 			tokenizer = new StreamTokenizer(streamReader);
@@ -339,6 +339,7 @@ public class PeerConfigs {
 	{
 		return havePortList.get(index);
 	}
+	
 	
 	public boolean getHasWholeFile(int index)
 	{

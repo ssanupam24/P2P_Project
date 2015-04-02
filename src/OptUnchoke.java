@@ -41,7 +41,6 @@ public class OptUnchoke implements Callable<Object> {
 		Socket sock;
 		InputStream input;
 		OutputStream output;
-		Message m = new Message();
 		try {
 		//PeerInfo.optimisticUnchokedPeer = PeerInfo.chokedInterested.get(index);
 		while(true) {
@@ -61,16 +60,15 @@ public class OptUnchoke implements Callable<Object> {
 				break;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
-				while((neighborArray[index].getNeighborChokedState().get() != 0) || (!neighborArray[index].getBitField().checkPiecesInterested(bits))){
-					index = randomGenerator.nextInt(neighborArray.length);
-					break;
-				}
-				flag = true;
+				if((neighborArray[index].getNeighborChokedState().get() == 0) && (neighborArray[index].getBitField().checkPiecesInterested(bits))){
+					flag = true;
+				}	
 			}
 			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
 			sock = neighborArray[index].getUploadSocket();
 			input = sock.getInputStream();
 			output = sock.getOutputStream();
+			Message m = new Message();
 			//Send unchoke message only if choked
 			//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 			if(neighborArray[index].getNeighborChokedState().compareAndSet(0, 2)){
@@ -82,15 +80,7 @@ public class OptUnchoke implements Callable<Object> {
 			
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
-				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
-					// if the neighbor is your OptUnchoked neighbor, then choke and set the choke state
-					if(neighborArray[index].getNeighborChokedState().compareAndSet(2, 0)){
-							m.setType(Message.choke);
-							m.setPayload(null);
-							m.sendMessage(output);
-					}
-					break;
-				}
+				
 				m.receiveMessage(input);
 				System.out.println("Did not get stuck waiting to receive a message in OptUnchoke.");
 				//Add the not interested thing here
@@ -107,6 +97,17 @@ public class OptUnchoke implements Callable<Object> {
 					m.setType(Message.piece);
 					m.setPayload(newPiece.getPieceContent());
 					m.sendMessage(output);
+				}
+				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){
+					// if the neighbor is your OptUnchoked neighbor, then choke and set the choke state
+					//see the below or delete
+						//m.receiveMessage(input);
+					if(neighborArray[index].getNeighborChokedState().compareAndSet(2, 0)) {
+						m.setType(Message.choke);
+						m.setPayload(null);
+						m.sendMessage(output);
+					}
+					break;
 				}
 			}
 		}

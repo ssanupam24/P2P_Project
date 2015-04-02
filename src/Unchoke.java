@@ -52,21 +52,11 @@ public class Unchoke implements Callable<Object> {
 		//Change the value of the choke state to preferred if OptUnchoke
 		if(selfInfo.getNeighborChokedState().get() == 2)
 			selfInfo.getNeighborChokedState().set(1);
-		long startTimer;
+		long startTimer = System.currentTimeMillis();
 		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
 		//for those neighbors, seems like it's efficient
 		while(true){
-			//Add the not interested message condition
-			startTimer = System.currentTimeMillis();
-			if((System.currentTimeMillis() - startTimer) >= (time * 1000)){
-				// if the neighbor is not your preferred neighbor, then choke
-				if(selfInfo.getNeighborChokedState().compareAndSet(1, 0)) {
-					m.setType(Message.choke);
-					m.setPayload(null);
-					m.sendMessage(output);
-				}
-				break;
-			}
+			//Add the not interested message condition		
 			m.receiveMessage(input);
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
@@ -91,6 +81,18 @@ public class Unchoke implements Callable<Object> {
 				m.setPayload(p.getPieceContent());
 				m.setType(Message.piece);
 				m.sendMessage(output);
+			}
+			if((System.currentTimeMillis() - startTimer) >= (time * 1000)){
+				// if the neighbor is not your preferred neighbor, then choke
+					//see or delete it
+				//m.receiveMessage(input);
+				if(selfInfo.getNeighborChokedState().compareAndSet(1, 0)) {
+					m.setType(Message.choke);
+					m.setPayload(null);
+					m.sendMessage(output);
+				}
+				System.out.println("Timer expired" + selfInfo.getPeerId());
+				break;
 			}
 		}
 		return new Object();

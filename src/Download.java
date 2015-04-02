@@ -40,8 +40,10 @@ public class Download implements Callable<Object> {
 				m.receiveMessage(input);
 				if(m.getType() == Message.unchoke){
 					logger.unchokeLog(selfInfo.getPeerId());
-					selfInfo.setChokedByNeighborState(0, 1);
+					//selfInfo.setChokedByNeighborState(0, 1);
 					while(true){
+						if(bits.getFinished())
+							break;
 						pieceIndex = bits.setInterestedPiece(selfInfo.getBitField());
 						//If there are no interesting piece then the function returns -1
 						if(pieceIndex == -1){
@@ -63,13 +65,12 @@ public class Download implements Callable<Object> {
 							if(m.getType() == Message.choke){
 								logger.chokeLog(selfInfo.getPeerId());
 								bits.setBitToFalse(pieceIndex);
-								selfInfo.setChokedByNeighborState(1, 0);
+								//selfInfo.setChokedByNeighborState(1, 0);
 								break;
 							}
 							if(m.getType() == Message.piece){
 								Piece p = new Piece(m.getPayload(), pieceIndex);
 								file.writeFile(p);
-								bits.setBitToTrue(pieceIndex);
 								selfInfo.incdownloadRate();
 								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, bits.getCountFinishedPieces());
 								//Create a have message and send it to all peers

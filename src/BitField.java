@@ -12,12 +12,14 @@ public class BitField {
 	private boolean[] bitPieceIndex;
 	private int countFinishedPieces;
 	private boolean finished;
+	private Vector<Integer> randomPieces;
 	
 	public BitField(int totPieces){
 		this.totPieces = totPieces;
 		bitPieceIndex = new boolean[totPieces];
 		countFinishedPieces = 0;
 		finished = false;
+		randomPieces = new Vector<Integer>();
 		for(int i =0; i < totPieces; i++){
 			bitPieceIndex[i] = false;
 		}
@@ -45,7 +47,7 @@ public class BitField {
 				result[byteIndex] = (byte)((1 << bitIndex) | (result[byteIndex]));
 			//Test it with and without
 			else
-				result[byteIndex] = (byte) (~(1 << bitIndex) & (result[byteIndex]));
+				result[byteIndex] = (byte) (~(1 << bitIndex) & result[byteIndex]);
 		}
 		return result;
 	}
@@ -59,12 +61,12 @@ public class BitField {
 			bitIndex = i % 8;
 			byteIndex = i / 8;
 			//An AND operation can tell you if a bit is set. If it is not set then the result will be 0
-			if(((1 << bitIndex) & (byteArray[byteIndex])) != 0) {
-				bitPieceIndex[i] = true;
-				countFinishedPieces++;
+			if(((1 << bitIndex) & (byteArray[byteIndex])) == 0) {
+				bitPieceIndex[i] = false;
 			}
 			else {
-				bitPieceIndex[i] = false;
+				bitPieceIndex[i] = true;
+				countFinishedPieces++;
 			}
 		}
 		if(countFinishedPieces == totPieces)
@@ -126,8 +128,8 @@ public class BitField {
 	}
 	//Check if the interested piece is downloaded then set the flag to true in bitfield array
 	public synchronized int setInterestedPiece(BitField bf){
-		/*
-		Vector<Integer> randomPieces = new Vector<Integer>();
+		
+		randomPieces.clear();
 		Random randomGenerator = new Random();
 		for(int i = 0; i < totPieces; i++){
 			if((bitPieceIndex[i] == false) && (bf.bitPieceIndex[i] == true)){
@@ -144,9 +146,7 @@ public class BitField {
 				finished = true;
 			return randomPieces.get(counter);
 		}
-		return -1;
-		*/
-		for(int i = 0; i < totPieces; i++){
+		/*for(int i = 0; i < totPieces; i++){
 			if((bitPieceIndex[i] == false) && (bf.bitPieceIndex[i] == true)){
 				bitPieceIndex[i] = true;
 				countFinishedPieces++;
@@ -154,9 +154,8 @@ public class BitField {
 					finished = true;
 				return i;
 			}
-		}
-	
-			return -1;
+		}*/
+		return -1;
 	}
 	
 }
