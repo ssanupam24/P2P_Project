@@ -154,6 +154,7 @@ public class peerProcess implements Runnable{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
 		System.out.println("Uploading process starts");
 		Vector<Integer> prefList = new Vector<Integer>();
+		//TODO:Change the below tree map to something else to store duplicate values
 		TreeMap<Integer, Integer> prefNeighborList = new TreeMap<Integer, Integer>(Collections.reverseOrder());
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		boolean finished;
