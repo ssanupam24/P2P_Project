@@ -25,7 +25,7 @@ public class LoggerPeer
 		Date date = new Date();
 		this.logTime = new Timestamp(date.getTime());
 		
-		file = new File(System.getProperty("user.home") + "/project/" + "log_peer_"+ peerId +".log");
+		file = new File(System.getProperty("user.home") + "/project/log_peer_"+ peerId +".log");
 		if(file.exists()) file.delete();
 		file.createNewFile();
 		
@@ -148,13 +148,13 @@ public class LoggerPeer
 	}
 	
 	// TODO: Remove later. Just for debugging purposes
-	public synchronized void requestLog(int peer_2, boolean flag)
+	public synchronized void requestLog(int peer_2, boolean flag, int pid)
 	{
 		String str;
 		if(flag)
-			str = getTime() + ": Peer " + peerId + " has received a request from " + peer_2 + ".\n";
+			str = getTime() + ": Peer " + peerId + " has received a request from " + peer_2 + " for piece " + pid + ".\n";
 		else
-			str = getTime() + ": Peer " + peerId + " has sent a request to " + peer_2 + ".\n";
+			str = getTime() + ": Peer " + peerId + " has sent a request to " + peer_2 + " for piece " + pid + ".\n";
 		writeToFile(str);
 	}
 	}

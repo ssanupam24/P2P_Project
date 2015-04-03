@@ -116,8 +116,8 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				}
 				if(m.getType() == Message.request){
-					logger.requestLog(neighborArray[index].getPeerId(), true);
 					index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
+					logger.requestLog(neighborArray[index].getPeerId(), true, index1);
 					Piece newPiece = file.readFile(index1);
 					m.setType(Message.piece);
 					m.setPayload(newPiece.getPieceContent());

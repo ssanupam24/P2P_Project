@@ -59,7 +59,7 @@ public class Download implements Callable<Object> {
 							m.setType(Message.request);
 							m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));
 							m.sendMessage(output);
-							logger.requestLog(selfInfo.getPeerId(), false);
+							logger.requestLog(selfInfo.getPeerId(), false, pieceIndex);
 							m.receiveMessage(input);
 							//If choke received then set the piece to false in bitfield to download it later
 							if(m.getType() == Message.choke){

@@ -10,14 +10,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BitField {
 	private final int totPieces;
 	private boolean[] bitPieceIndex;
-	private int countFinishedPieces;
+	private AtomicInteger countFinishedPieces;
 	private boolean finished;
 	private Vector<Integer> randomPieces;
 	
 	public BitField(int totPieces){
 		this.totPieces = totPieces;
 		bitPieceIndex = new boolean[totPieces];
-		countFinishedPieces = 0;
+		countFinishedPieces = new AtomicInteger(0);
 		finished = false;
 		randomPieces = new Vector<Integer>();
 		for(int i =0; i < totPieces; i++){
@@ -56,7 +56,7 @@ public class BitField {
 	public synchronized void setBitFromByte(byte[] byteArray){
 		int bitIndex;
 		int byteIndex;
-		countFinishedPieces = 0;
+		countFinishedPieces.set(0);
 		for(int i = 0; i < totPieces; i++){
 			bitIndex = i % 8;
 			byteIndex = i / 8;
@@ -66,10 +66,10 @@ public class BitField {
 			}
 			else {
 				bitPieceIndex[i] = true;
-				countFinishedPieces++;
+				countFinishedPieces.set(countFinishedPieces.get() + 1);
 			}
 		}
-		if(countFinishedPieces == totPieces)
+		if(countFinishedPieces.get() == totPieces)
 			finished = true;
 	}
 	
@@ -90,14 +90,14 @@ public class BitField {
 	}
 	
 	public synchronized int getCountFinishedPieces(){
-		return countFinishedPieces;
+		return countFinishedPieces.get();
 	}
 	
 	public synchronized void setBitToTrue(int index){
 		if(bitPieceIndex[index] == false){
 			bitPieceIndex[index] = true;
-			countFinishedPieces++;
-			if(countFinishedPieces == totPieces)
+			countFinishedPieces.set(countFinishedPieces.get() + 1);
+			if(countFinishedPieces.get() == totPieces)
 				finished = true;
 		}
 	}
@@ -105,7 +105,7 @@ public class BitField {
 	public synchronized void setBitToFalse(int index){
 		if(bitPieceIndex[index] == true){
 			bitPieceIndex[index] = false;
-			countFinishedPieces--;
+			countFinishedPieces.set(countFinishedPieces.get() - 1);
 			finished = false;
 		}
 	}
@@ -114,7 +114,7 @@ public class BitField {
 		for(int i =0; i < totPieces; i++){
 			bitPieceIndex[i] = true;
 		}
-		countFinishedPieces = totPieces;
+		countFinishedPieces.set(totPieces);
 		finished = true;
 	}
  
@@ -141,8 +141,8 @@ public class BitField {
 		else if(randomPieces.size() > 0){
 			int counter = randomGenerator.nextInt(randomPieces.size()); 
 			bitPieceIndex[randomPieces.get(counter)] = true;
-			countFinishedPieces++;
-			if(countFinishedPieces == totPieces)
+			countFinishedPieces.set(countFinishedPieces.get() + 1);
+			if(countFinishedPieces.get() == totPieces)
 				finished = true;
 			return randomPieces.get(counter);
 		}
