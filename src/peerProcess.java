@@ -183,14 +183,14 @@ public class peerProcess implements Runnable{
 				counter = 0;
 				for(int k = 0; k < neighborInfo.length && counter < peerConfigs.getPrefNeighbors(); k++){
 					if((neighborInfo[k].getBitField().checkPiecesInterested(bitfield)) && 
-							(neighborInfo[k].getNeighborChokedState().get() != 2)){
+							(neighborInfo[k].getNeighborChokedState().get() == 0)){
 						counter++;
 					}
 				}
 				while(counter != 0) {
 					index = randomGenerator.nextInt(neighborInfo.length);
 					while(prefNeighborList.containsKey(neighborInfo[index].getPeerId()) || (!neighborInfo[index].getBitField().checkPiecesInterested(bitfield))
-							|| (neighborInfo[index].getNeighborChokedState().get() == 2)) {
+							|| (neighborInfo[index].getNeighborChokedState().get() != 0)) {
 						index = randomGenerator.nextInt(neighborInfo.length);
 					}
 					prefNeighborList.put(neighborInfo[index].getPeerId(),index);
@@ -222,7 +222,7 @@ public class peerProcess implements Runnable{
 				// Check all the download rate and select preferred neighbors
 				for (int i = 0; i < neighborInfo.length; i++) {
 					if ((neighborInfo[i].getBitField().checkPiecesInterested(bitfield))&& 
-							(neighborInfo[i].getNeighborChokedState().get() != 2)) {
+							(neighborInfo[i].getNeighborChokedState().get() == 0)) {
 						if(prefNeighborList1.containsKey(neighborInfo[i].getdownloadRate())){
 							prefNeighborList1.get(neighborInfo[i].getdownloadRate()).add(i);
 						}

@@ -88,7 +88,9 @@ public class BitField {
 	public synchronized boolean getFinished(){
 		return finished;
 	}
-	
+	public synchronized int getBitPieceIndexLength(){
+		return bitPieceIndex.length;
+	}
 	public synchronized int getCountFinishedPieces(){
 		return countFinishedPieces.get();
 	}

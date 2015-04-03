@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 /*
@@ -69,10 +70,18 @@ public class Download implements Callable<Object> {
 								break;
 							}
 							if(m.getType() == Message.piece){
-								Piece p = new Piece(m.getPayload(), pieceIndex);
+								byte[] pieceNum = new byte[4];
+								byte[] pieceContent = new byte[m.getPayload().length - 4];
+								byte[] chunk = m.getPayload();
+								pieceNum = Arrays.copyOfRange(chunk, 0, 4);
+								pieceContent = Arrays.copyOfRange(chunk, 4, chunk.length);
+								Piece p = new Piece(pieceContent, ByteIntConversion.byteArrayToInt(pieceNum));
+								//Just to check the received piece number
+								if(ByteIntConversion.byteArrayToInt(pieceNum) >= bits.getBitPieceIndexLength())
+									throw new Exception();
 								file.writeFile(p);
 								selfInfo.incdownloadRate();
-								logger.downloadingLog(selfInfo.getPeerId(), pieceIndex, bits.getCountFinishedPieces());
+								logger.downloadingLog(selfInfo.getPeerId(), ByteIntConversion.byteArrayToInt(pieceNum), bits.getCountFinishedPieces());
 								//Create a have message and send it to all peers
 								m.setType(Message.have);
 								m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));

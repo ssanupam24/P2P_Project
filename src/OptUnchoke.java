@@ -59,11 +59,11 @@ public class OptUnchoke implements Callable<Object> {
 			//if yes then break from the loop and return null
 			if(finished)
 				return new Object();
+			finished = false;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if((neighborArray[index].getNeighborChokedState().get() == 0) && (neighborArray[index].getBitField().checkPiecesInterested(bits))){
 					flag = true;
-					finished = false;
 				}
 				counter = 0;
 				for(int i = 0; i < neighborArray.length; i++){
@@ -119,8 +119,12 @@ public class OptUnchoke implements Callable<Object> {
 					index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
 					logger.requestLog(neighborArray[index].getPeerId(), true, index1);
 					Piece newPiece = file.readFile(index1);
+					byte[] piecelen = ByteIntConversion.intToByteArray(newPiece.getPieceNum());
+					byte[] chunk = new byte[piecelen.length + newPiece.getPieceContent().length];
+					System.arraycopy(piecelen, 0, chunk, 0, piecelen.length);
+					System.arraycopy(newPiece.getPieceContent(), 0, chunk, piecelen.length, newPiece.getPieceContent().length);
 					m.setType(Message.piece);
-					m.setPayload(newPiece.getPieceContent());
+					m.setPayload(chunk);
 					m.sendMessage(output);
 				}
 				if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000)){

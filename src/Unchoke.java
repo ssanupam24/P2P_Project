@@ -81,7 +81,11 @@ public class Unchoke implements Callable<Object> {
 				pieceIndex = ByteIntConversion.byteArrayToInt(m.getPayload());
 				logger.requestLog(selfInfo.getPeerId(), true, pieceIndex);
 				Piece p = file.readFile(pieceIndex);
-				m.setPayload(p.getPieceContent());
+				byte[] piecelen = ByteIntConversion.intToByteArray(p.getPieceNum());
+				byte[] chunk = new byte[piecelen.length + p.getPieceContent().length];
+				System.arraycopy(piecelen, 0, chunk, 0, piecelen.length);
+				System.arraycopy(p.getPieceContent(), 0, chunk, piecelen.length, p.getPieceContent().length);
+				m.setPayload(chunk);
 				m.setType(Message.piece);
 				m.sendMessage(output);
 			}
