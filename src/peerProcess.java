@@ -7,6 +7,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -155,7 +157,7 @@ public class peerProcess implements Runnable{
 		System.out.println("Uploading process starts");
 		Vector<Integer> prefList = new Vector<Integer>();
 		//TODO:Change the below tree map to something else to store duplicate values
-		TreeMap<Integer, Integer> prefNeighborList = new TreeMap<Integer, Integer>(Collections.reverseOrder()); // for peers with the whole file
+		Map<Integer, Integer> prefNeighborList = new Hashtable<Integer, Integer>(); // for peers with the whole file
 		TreeMap<Integer, Vector<Integer>> prefNeighborList1 = new TreeMap<Integer, Vector<Integer>>(Collections.reverseOrder()); // for peers without the whole file
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		boolean finished;
