@@ -4,7 +4,7 @@
  */
 public class ByteIntConversion {
 	//Converts byte array to int
-	public static int byteArrayToInt(byte[] b) 
+	public synchronized static int byteArrayToInt(byte[] b) 
 	{
 	    int value = 0;
 	    for (int i = 0; i < 4; i++) {
@@ -14,7 +14,7 @@ public class ByteIntConversion {
 	    return value;
 	}
 	//Converts int to byte array
-	public static byte[] intToByteArray(int a)
+	public synchronized static byte[] intToByteArray(int a)
 	{
 	    byte[] ret = new byte[4];
 	    ret[3] = (byte) (a & 0xFF);   
