@@ -1,5 +1,6 @@
 import java.util.Random;
 import java.util.Vector;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /*
@@ -8,19 +9,20 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class BitField {
 	private final int totPieces;
-	private boolean[] bitPieceIndex;
+	private AtomicBoolean[] bitPieceIndex;
 	private AtomicInteger countFinishedPieces;
 	private boolean finished;
 	private Vector<Integer> randomPieces;
 	
 	public BitField(int totPieces){
 		this.totPieces = totPieces;
-		bitPieceIndex = new boolean[totPieces];
+		bitPieceIndex = new AtomicBoolean[totPieces];
 		countFinishedPieces = new AtomicInteger(0);
 		finished = false;
 		randomPieces = new Vector<Integer>();
 		for(int i =0; i < totPieces; i++){
-			bitPieceIndex[i] = false;
+			bitPieceIndex[i] = new AtomicBoolean();
+			bitPieceIndex[i].set(false);
 		}
 	}
 	/*
@@ -42,7 +44,7 @@ public class BitField {
 		for(int i =0; i < totPieces; i++){
 			bitIndex = i % 8;
 			byteIndex = i / 8;
-			if(getBitPieceIndex()[i] == true)
+			if(bitPieceIndex[i].get() == true)
 				result[byteIndex] = (byte)((1 << bitIndex) | (result[byteIndex]));
 			//Test it with and without
 			else
@@ -61,10 +63,10 @@ public class BitField {
 			byteIndex = i / 8;
 			//An AND operation can tell you if a bit is set. If it is not set then the result will be 0
 			if(((1 << bitIndex) & (byteArray[byteIndex])) == 0) {
-				getBitPieceIndex()[i] = false;
+				bitPieceIndex[i].set(false);
 			}
 			else {
-				getBitPieceIndex()[i] = true;
+				bitPieceIndex[i].set(true);
 				countFinishedPieces.set(countFinishedPieces.get() + 1);
 			}
 		}
@@ -76,7 +78,7 @@ public class BitField {
 	public synchronized String changeBitToString(){
 		String result = "";
 		for(int i = 0; i < totPieces; i++){
-			if(getBitPieceIndex()[i] == true)
+			if(bitPieceIndex[i].get() == true)
 				result += "1";
 			else
 				result += "0";
@@ -90,16 +92,14 @@ public class BitField {
 	public synchronized int getBitPieceIndexLength(){
 		return bitPieceIndex.length;
 	}
-	public synchronized boolean[] getBitPieceIndex(){
-		return bitPieceIndex;
-	}
+	
 	public synchronized int getCountFinishedPieces(){
 		return countFinishedPieces.get();
 	}
 	
 	public synchronized void setBitToTrue(int index){
-		if(getBitPieceIndex()[index] == false){
-			getBitPieceIndex()[index] = true;
+		if(bitPieceIndex[index].get() == false){
+			bitPieceIndex[index].set(true);
 			countFinishedPieces.set(countFinishedPieces.get() + 1);
 			if(countFinishedPieces.get() == totPieces)
 				finished = true;
@@ -107,8 +107,8 @@ public class BitField {
 	}
 	
 	public synchronized void setBitToFalse(int index){
-		if(getBitPieceIndex()[index] == true){
-			getBitPieceIndex()[index] = false;
+		if(bitPieceIndex[index].get() == true){
+			bitPieceIndex[index].set(false);
 			countFinishedPieces.set(countFinishedPieces.get() - 1);
 			finished = false;
 		}
@@ -116,7 +116,7 @@ public class BitField {
 	
 	public synchronized void setAllBitsTrue(){
 		for(int i =0; i < totPieces; i++){
-			getBitPieceIndex()[i] = true;
+			bitPieceIndex[i].set(true);
 		}
 		countFinishedPieces.set(totPieces);
 		finished = true;
@@ -125,7 +125,7 @@ public class BitField {
 	//Check if the piece is not present then return interested
 	public synchronized boolean checkPiecesInterested(BitField bf){
 		for(int i = 0; i < totPieces; i++){
-			if((getBitPieceIndex()[i] == false) && (bf.getBitPieceIndex()[i] == true)) 
+			if((bitPieceIndex[i].get() == false) && (bf.bitPieceIndex[i].get() == true)) 
 				return true;
 		}
 		return false;
@@ -136,7 +136,7 @@ public class BitField {
 		randomPieces.clear();
 		Random randomGenerator = new Random();
 		for(int i = 0; i < totPieces; i++){
-			if((getBitPieceIndex()[i] == false) && (bf.getBitPieceIndex()[i] == true)){
+			if((bitPieceIndex[i].get() == false) && (bf.bitPieceIndex[i].get() == true)){
 				randomPieces.add(i);
 			}
 		}
@@ -144,7 +144,7 @@ public class BitField {
 			return -1;
 		else if(randomPieces.size() > 0){
 			int counter = randomGenerator.nextInt(randomPieces.size()); 
-			getBitPieceIndex()[randomPieces.get(counter)] = true;
+			bitPieceIndex[randomPieces.get(counter)].set(true);
 			countFinishedPieces.set(countFinishedPieces.get() + 1);
 			if(countFinishedPieces.get() == totPieces)
 				finished = true;
