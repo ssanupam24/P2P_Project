@@ -82,7 +82,7 @@ public class NeighborInfo {
 		chokedByNeighborState.set(1);
 	}	
 	public synchronized void setBitField(BitField newBitField){
-		bitField = newBitField;
+		this.bitField = newBitField;
 	}
 	public synchronized void setBitField(byte[] BitFieldNew){
 		bitField.setBitFromByte(BitFieldNew);
@@ -100,7 +100,7 @@ public class NeighborInfo {
 		return bitField.getFinished();
 	}
 	public synchronized void setBitInBitField(int index){
-		bitField.setBitToTrue(index);
+		this.bitField.setBitToTrue(index);
 	}
 	public synchronized Boolean setChokedByNeighborState(int value, int newValue){
 		return chokedByNeighborState.compareAndSet(value, newValue);

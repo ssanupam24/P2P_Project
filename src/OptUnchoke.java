@@ -48,22 +48,12 @@ public class OptUnchoke implements Callable<Object> {
 			//Select a peer randomly for optUnchoke
 			startTimer = System.currentTimeMillis();
 			flag = false;
-			finished = true;
-			//Check whether all the peers have downloaded the entire file or not
-			for(int i = 0; i < neighborArray.length; i++){
-				if(!neighborArray[i].hasFinished()) {
-					finished = false;
-					break;
-				}
-			}
-			//if yes then break from the loop and return null
-			if(finished)
-				return new Object();
 			finished = false;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if((neighborArray[index].getNeighborChokedState().get() == 0) && (neighborArray[index].getBitField().checkPiecesInterested(bits))){
 					flag = true;
+					neighborArray[index].getNeighborChokedState().set(2);
 				}
 				counter = 0;
 				for(int i = 0; i < neighborArray.length; i++){
@@ -85,7 +75,7 @@ public class OptUnchoke implements Callable<Object> {
 			Message m = new Message();
 			//Send unchoke message only if choked
 			//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
-			if(neighborArray[index].getNeighborChokedState().compareAndSet(0, 2)){
+			if(neighborArray[index].getNeighborChokedState().get() == 2){
 					System.out.println("Unchoked from OptUnchoked");
 					m.setType(Message.unchoke);
 					m.setPayload(null);
@@ -139,6 +129,17 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				}
 			}
+			finished = true;
+			//Check whether all the peers have downloaded the entire file or not
+			for(int i = 0; i < neighborArray.length; i++){
+				if(!neighborArray[i].hasFinished()) {
+					finished = false;
+					break;
+				}
+			}
+			//if yes then break from the loop and return null
+			if(finished)
+				return new Object();
 		}
 		}
 		catch (IOException ex) {

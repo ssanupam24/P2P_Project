@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -180,6 +181,7 @@ public class peerProcess implements Runnable{
 			prefNeighborList.clear();
 			prefNeighborList1.clear();
 			prefList.clear();
+			uploadList.clear();
 			if(fullFile) {
 				System.out.println("Choose pref neighbors");
 				counter = 0;
@@ -272,6 +274,9 @@ public class peerProcess implements Runnable{
 					}
 				}
 			}
+			//Finally the pool is shutdown 
+			uploadPool.shutdownNow();
+			uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		}
 		System.out.println("Uploading done");
 		//Finally the pool is shutdown 
