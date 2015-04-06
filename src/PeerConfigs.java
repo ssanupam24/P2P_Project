@@ -4,7 +4,6 @@
  * respective member variables
  */
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -12,8 +11,6 @@ import java.io.*;
 
 public class PeerConfigs {
 	private FileInputStream in = null;
-	private Reader streamReader;
-	private StreamTokenizer tokenizer;
 	private int prefNeighbors;
 	private int timeUnchoke;
 	private int timeOptUnchoke;
