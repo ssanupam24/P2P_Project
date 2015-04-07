@@ -41,6 +41,9 @@ public class Unchoke implements Callable<Object> {
 	{
 		boolean finished;
 		int pieceIndex;
+		if(selfInfo.getNeighborChokedState().get() == 2){
+			return new Object();
+		}
 		//Send Unchoke to the peer that created this callable and then start uploading
 		//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 		if(selfInfo.getNeighborChokedState().compareAndSet(0, 1)){

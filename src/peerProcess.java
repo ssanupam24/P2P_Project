@@ -102,6 +102,8 @@ public class peerProcess implements Runnable{
 				}
 			}
 			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
+			//A hack!!! Please bear with me
+			Thread.sleep(1000);
 			//Call unchoker function to start unchoker callable
 			unchokerProcess();
 			//Now check all the future objects and shut down threads if done with 
@@ -171,7 +173,8 @@ public class peerProcess implements Runnable{
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborInfo.length; i++){
-				neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0);
+				if(neighborInfo[i].getNeighborChokedState().get() == 1)
+					neighborInfo[i].getNeighborChokedState().set(0);
 				if (!neighborInfo[i].hasFinished())
 					finished = false;
 			}
