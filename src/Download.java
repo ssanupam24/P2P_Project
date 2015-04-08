@@ -37,14 +37,14 @@ public class Download implements Callable<Object> {
 			try{
 				//TODO: Don't need to check the neighbor's download, check yours and quit from the callable
 				if(bits.getFinished())
-					break;
+					return new Object();
 				m.receiveMessage(input);
 				if(m.getType() == Message.unchoke){
 					logger.unchokeLog(selfInfo.getPeerId());
 					//selfInfo.setChokedByNeighborState(0, 1);
 					while(true){
 						if(bits.getFinished())
-							break;
+							return new Object();
 						pieceIndex = bits.setInterestedPiece(selfInfo.getBitField());
 						//If there are no interesting piece then the function returns -1
 						if(pieceIndex == -1){
@@ -98,6 +98,5 @@ public class Download implements Callable<Object> {
 				e.printStackTrace();
 			}
 		}
-		return new Object();
 	}
 }

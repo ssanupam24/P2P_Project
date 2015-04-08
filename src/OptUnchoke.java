@@ -46,7 +46,6 @@ public class OptUnchoke implements Callable<Object> {
 		//PeerInfo.optimisticUnchokedPeer = PeerInfo.chokedInterested.get(index);
 		while(true) {
 			//Select a peer randomly for optUnchoke
-			startTimer = System.currentTimeMillis();
 			flag = false;
 			finished = false;
 			while (!flag) {
@@ -83,7 +82,7 @@ public class OptUnchoke implements Callable<Object> {
 					m.setPayload(null);
 					m.sendMessage(output);
 			//}
-			
+			startTimer = System.currentTimeMillis();
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
 				//Check to see if all the neighbors are done downloading

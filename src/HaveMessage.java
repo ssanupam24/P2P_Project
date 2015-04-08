@@ -54,7 +54,7 @@ public class HaveMessage implements Callable<Object> {
 			}
 			//if yes then break from the loop and return null
 			if(finished)
-				break;
+				return new Object();
 			m.receiveMessage(input);
 			if(m.getType() == Message.have){
 				byte[] payload = m.getPayload();
@@ -80,6 +80,5 @@ public class HaveMessage implements Callable<Object> {
 				logger.notInterestedLog(selfInfo.getPeerId());
 			}
 		}
-		return new Object();
 	}
 	}

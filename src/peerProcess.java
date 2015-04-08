@@ -248,14 +248,15 @@ public class peerProcess implements Runnable{
 				// Start the threads for those neighbors
 				counter = 0;
 				//System.out.println("Before future while");
-				for(int i = 0; i < neighborInfo.length; i++){
-					neighborInfo[i].resetDownload();
-				}
+				//for(int i = 0; i < neighborInfo.length; i++){
+					//neighborInfo[i].resetDownload();
+				//}
 				while (it.hasNext()) {
 					Map.Entry<Integer, Vector<Integer>> m = (Map.Entry<Integer, Vector<Integer>>) it.next();
 					Vector<Integer> v = m.getValue();
 					while(v.size() > 0){
 						prefList.add(neighborInfo[v.get(0)].getPeerId());
+						neighborInfo[v.get(0)].resetDownload();
 						Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id,
 								neighborInfo[v.get(0)], log,
 								neighborInfo, unchokeInterval, filePointer));
