@@ -62,14 +62,16 @@ public class Unchoke implements Callable<Object> {
 		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
 		//for those neighbors, seems like it's efficient
 		while(true){
-			finished = true;
+			finished = false;
+			int counter = 0;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborArray.length; i++){
-				if(!neighborArray[i].hasFinished()) {
-					finished = false;
-					break;
+				if(neighborArray[i].hasFinished()) {
+					counter++;
 				}
 			}
+			if(counter == neighborArray.length)
+				finished = true;
 			//if yes then break from the loop and return an Object to keep track of the task in peerProcess
 			if(finished)
 				return new Object();
@@ -105,6 +107,7 @@ public class Unchoke implements Callable<Object> {
 				break;
 			}
 		}
+		selfInfo.getNeighborChokedState().compareAndSet(1, 0);
 		return new Object();
 	}
 	

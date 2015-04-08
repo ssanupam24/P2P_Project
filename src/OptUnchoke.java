@@ -77,12 +77,12 @@ public class OptUnchoke implements Callable<Object> {
 			Message m = new Message();
 			//Send unchoke message only if choked
 			//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
-			if(neighborArray[index].getNeighborChokedState().get() == 2){
+			//if(neighborArray[index].getNeighborChokedState().get() == 2){
 					System.out.println("Unchoked from OptUnchoked");
 					m.setType(Message.unchoke);
 					m.setPayload(null);
 					m.sendMessage(output);
-			}
+			//}
 			
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
