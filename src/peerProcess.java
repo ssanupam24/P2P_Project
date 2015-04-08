@@ -187,7 +187,7 @@ public class peerProcess implements Runnable{
 			prefList.clear();
 			uploadList.clear();
 			if(fullFile) {
-				System.out.println("Choose pref neighbors");
+				//System.out.println("Choose pref neighbors");
 				counter = 0;
 				for(int k = 0; k < neighborInfo.length && counter < peerConfigs.getPrefNeighbors(); k++){
 					if((neighborInfo[k].getBitField().checkPiecesInterested(bitfield)) && 
@@ -195,7 +195,7 @@ public class peerProcess implements Runnable{
 						counter++;
 					}
 				}
-				System.out.println("Number of peers interested in this peer " + peer_id + " is " + counter);
+				//System.out.println("Number of peers interested in this peer " + peer_id + " is " + counter);
 				while(counter != 0) {
 					index = randomGenerator.nextInt(neighborInfo.length);
 					while(prefNeighborList.contains(index) || (!neighborInfo[index].getBitField().checkPiecesInterested(bitfield))
@@ -226,7 +226,7 @@ public class peerProcess implements Runnable{
 				}
 			}
 			else {
-				System.out.println("Choose pref neighbors");
+				//System.out.println("Choose pref neighbors");
 				int counter1 = 0;
 				// Check all the download rate and select preferred neighbors
 				for (int i = 0; i < neighborInfo.length; i++) {
@@ -243,7 +243,7 @@ public class peerProcess implements Runnable{
 						counter1++;
 					}
 				}
-				System.out.println("Number of peers interested in this peer " + peer_id + " is " + counter1);
+				//System.out.println("Number of peers interested in this peer " + peer_id + " is " + counter1);
 				Set<Entry<Integer, Vector<Integer>>> set = prefNeighborList1.entrySet();
 				Iterator<Entry<Integer, Vector<Integer>>> it = set.iterator();
 				// Start the threads for those neighbors
