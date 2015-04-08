@@ -175,6 +175,7 @@ public class peerProcess implements Runnable{
 			for(int i = 0; i < neighborInfo.length; i++){
 				//if(neighborInfo[i].getNeighborChokedState().get() == 1)
 				//	neighborInfo[i].getNeighborChokedState().set(0);
+				neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0);
 				if (!neighborInfo[i].hasFinished())
 					finished = false;
 			}

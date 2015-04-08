@@ -84,7 +84,7 @@ public class Download implements Callable<Object> {
 								logger.downloadingLog(selfInfo.getPeerId(), ByteIntConversion.byteArrayToInt(pieceNum), bits.getCountFinishedPieces());
 								//Create a have message and send it to all peers
 								m.setType(Message.have);
-								m.setPayload(ByteIntConversion.intToByteArray(pieceIndex));
+								m.setPayload(pieceNum);
 								for(int i = 0; i < neighborArray.length; i++) {
 									m.sendMessage(neighborArray[i].getHaveSocket().getOutputStream());
 								}
