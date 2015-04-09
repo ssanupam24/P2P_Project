@@ -38,14 +38,14 @@ public class HandleFile{
 		int len;
 		offset = size * p.getPieceNum();
 		len = p.getPieceContent().length;
-		filename.seek(offset);
+		getFile().seek(offset);
 		int i = 0;
 		while(i < len){
-			filename.writeByte(temp[i]);
+			getFile().writeByte(temp[i]);
 			i++;
 		}
 	}
-	//Read a piece from a file
+	//Read a piece from a file for unchoke
 	public synchronized Piece readFile(int id) throws IOException{
 		int length;
 		//Get the total length of the piece
@@ -54,11 +54,11 @@ public class HandleFile{
 		else
 			length = fileConfig.getSizeOfPiece();
 		int offset = fileConfig.getSizeOfPiece() * id;
-		filename.seek(offset); //Shifts the pointer to the desired location
+		getFile().seek(offset); //Shifts the pointer to the desired location
 		byte[] pieceContent = new byte[length];
 		int i = 0;
 		while(i < length){
-			byte t = filename.readByte();
+			byte t = getFile().readByte();
 			pieceContent[i] = t;
 			i++;
 		}
@@ -66,6 +66,27 @@ public class HandleFile{
 		Piece p = new Piece(pieceContent, id);
 		return p;
 	}
+	//Read a piece from a file for optUnchoke
+		public synchronized Piece readFileForOpt(int id) throws IOException{
+			int length;
+			//Get the total length of the piece
+			if(id == fileConfig.getTotalPieces() - 1)
+				length = fileConfig.getSizeOfLastPiece();
+			else
+				length = fileConfig.getSizeOfPiece();
+			int offset = fileConfig.getSizeOfPiece() * id;
+			getFile().seek(offset); //Shifts the pointer to the desired location
+			byte[] pieceContent = new byte[length];
+			int i = 0;
+			while(i < length){
+				byte t = getFile().readByte();
+				pieceContent[i] = t;
+				i++;
+			}
+			//filename.read(pieceContent); //It will read length bytes from the offset position
+			Piece p = new Piece(pieceContent, id);
+			return p;
+		}
 }
 	 
 	

@@ -31,6 +31,7 @@ public class OptUnchoke implements Callable<Object> {
 		this.bits = bits;
 		this.peerId = id;
 		this.logger = logger;
+		this.file = file;
 		this.optInterval = optInterval;
 	}
 	public Object call() throws Exception 
@@ -112,7 +113,7 @@ public class OptUnchoke implements Callable<Object> {
 					index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
 					System.out.println("Received a request in OptUnchoked");
 					logger.requestLog(neighborArray[index].getPeerId(), true, index1);
-					Piece newPiece = file.readFile(index1);
+					Piece newPiece = file.readFileForOpt(index1);
 					System.out.println("Piece is read from Optunchoke and now i am sending the piece");
 					byte[] piecelen = ByteIntConversion.intToByteArray(newPiece.getPieceNum());
 					byte[] chunk = new byte[piecelen.length + newPiece.getPieceContent().length];
