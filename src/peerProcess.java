@@ -41,7 +41,9 @@ public class peerProcess implements Runnable{
 	ServerSocket downloadServerSocket;
 	ServerSocket haveServerSocket;
 	boolean fullFile;
-	
+	private ExecutorService downloadPool;
+	private ExecutorService havePool;
+	private ExecutorService optThread;
 	public peerProcess(int peerID) throws Exception
 	{
 		this.peer_id = peerID;
@@ -74,10 +76,10 @@ public class peerProcess implements Runnable{
 			Vector<Future<Object>> downList = new Vector<Future<Object>>();
 			Vector<Future<Object>> haveList = new Vector<Future<Object>>();
 			//Create executor services for download and have.
-			ExecutorService downloadPool = Executors.newFixedThreadPool(totalNeighbors);
-			ExecutorService havePool = Executors.newFixedThreadPool(totalNeighbors);
+			downloadPool = Executors.newFixedThreadPool(totalNeighbors);
+			havePool = Executors.newFixedThreadPool(totalNeighbors);
 			//Create a fixed thread executor service for optunchoke
-			ExecutorService optThread = Executors.newSingleThreadExecutor();
+			optThread = Executors.newSingleThreadExecutor();
 			if(!fullFile){
 				for(int j = 0; j < neighborInfo.length; j++){
 					System.out.println("Submitted download and have");
@@ -148,7 +150,27 @@ public class peerProcess implements Runnable{
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
+			try{
+			log.completeDownloadLog();
+			filePointer.getFile().close();
+			downloadPool.shutdown();
+			havePool.shutdown();
+			optThread.shutdown();
+			//Hopefully all the tasks are completed successfully and the control reaches here, 
+			//now its celebration time :)
+			uploadServerSocket.close();
+			downloadServerSocket.close();
+			haveServerSocket.close();
+			for(int j = 0; j < neighborInfo.length; j++){
+				// Close all the sockets
+				neighborInfo[j].getHaveSocket().close();
+				neighborInfo[j].getDownloadSocket().close();
+				neighborInfo[j].getUploadSocket().close();
+			}
+			}
+			catch(Exception e1){
+				
+			}
 		}
 		//printNeighborInfo();	
 	}
@@ -344,7 +366,9 @@ public class peerProcess implements Runnable{
 		Socket downloadSocket = downloadServerSocket.accept();
 		Socket uploadSocket = uploadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
-		
+		downloadSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
+		uploadSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
+		haveSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
 		// Put the sockets in the neighborInfo object
 		neighborInfo[index].setUploadSocket(uploadSocket);
 		neighborInfo[index].setDownloadSocket(downloadSocket);
@@ -419,7 +443,9 @@ public class peerProcess implements Runnable{
 		Socket uploadClientSocket = new Socket(host, downloadPort);
 		Socket downloadClientSocket = new Socket(host, uploadPort);
 		Socket haveClientSocket = new Socket(host, havePort);
-		
+		uploadClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
+		downloadClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
+		haveClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
 		// put client sockets in the neighborInfo array
 		otherInfo.setDownloadSocket(downloadClientSocket);
 		otherInfo.setUploadSocket(uploadClientSocket);

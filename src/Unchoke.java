@@ -77,8 +77,13 @@ public class Unchoke implements Callable<Object> {
 				return new Object();*/
 			if(selfInfo.getBitField().getFinished())
 				return new Object();
-			//Add the not interested message condition		
+			//Add the not interested message condition	
+			try{
 			m.receiveMessage(input);
+			}
+			catch(Exception e){
+				return new Object();
+			}
 			if(m.getType() == Message.notInterested){
 				logger.notInterestedLog(selfInfo.getPeerId());
 				//break or do something

@@ -102,7 +102,14 @@ public class OptUnchoke implements Callable<Object> {
 				//If the selected peer is done downloading then exit from the loop and select a new peer
 				if(neighborArray[index].getBitField().getFinished())
 					break;
+				System.out.println("Before receiving msg in OptUnchoke.\nPeer " + neighborArray[index].getPeerId() + " has total pieces: "
+						+ neighborArray[index].getBitField().getCountFinishedPieces());
+				try{
 				m.receiveMessage(input);
+				}
+				catch(Exception e){
+					return new Object();
+				}
 				System.out.println("Did not get stuck waiting to receive a message in OptUnchoke.");
 				//Add the not interested thing here
 				if(m.getType() == Message.notInterested){
