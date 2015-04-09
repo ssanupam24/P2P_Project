@@ -102,8 +102,6 @@ public class peerProcess implements Runnable{
 				}
 			}
 			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
-			//A hack!!! Please bear with me
-			//Thread.sleep(3000);
 			//Call unchoker function to start unchoker callable
 			unchokerProcess();
 			//Now check all the future objects and shut down threads if done with 
@@ -159,7 +157,6 @@ public class peerProcess implements Runnable{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
 		System.out.println("Uploading process starts");
 		Vector<Integer> prefList = new Vector<Integer>();
-		//TODO:Change the below tree map to something else to store duplicate values
 		Vector<Integer> prefNeighborList = new Vector<Integer>(); // for peers with the whole file
 		TreeMap<Integer, Vector<Integer>> prefNeighborList1 = new TreeMap<Integer, Vector<Integer>>(Collections.reverseOrder()); // for peers without the whole file
 		ExecutorService uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
@@ -173,8 +170,6 @@ public class peerProcess implements Runnable{
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborInfo.length; i++){
-				//if(neighborInfo[i].getNeighborChokedState().get() == 1)
-				//	neighborInfo[i].getNeighborChokedState().set(0);
 				neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0);
 				if (!neighborInfo[i].hasFinished())
 					finished = false;
@@ -206,7 +201,6 @@ public class peerProcess implements Runnable{
 					counter--;
 				}
 				
-				//System.out.println("Before future for loop");
 				while (prefNeighborList.size() != 0) {
 					prefList.add(neighborInfo[prefNeighborList.get(0)].getPeerId());
 					Future<Object> uploadFuture = uploadPool.submit(new Unchoke(peer_id, neighborInfo[prefNeighborList.get(0)],log,
@@ -214,7 +208,6 @@ public class peerProcess implements Runnable{
 					uploadList.add(uploadFuture);
 					prefNeighborList.remove(0);
 				}
-				//System.out.println("After future for loop");
 				if(prefList.size() != 0)
 					log.changeOfPreferredNeighbourLog(prefList);
 				// Wait for the future objects here till the upload threads
@@ -226,8 +219,6 @@ public class peerProcess implements Runnable{
 				}
 			}
 			else {
-				//System.out.println("Choose pref neighbors");
-				int counter1 = 0;
 				// Check all the download rate and select preferred neighbors
 				for (int i = 0; i < neighborInfo.length; i++) {
 					if ((neighborInfo[i].getBitField().checkPiecesInterested(bitfield))&& 
@@ -240,18 +231,12 @@ public class peerProcess implements Runnable{
 							v.add(i);
 							prefNeighborList1.put(neighborInfo[i].getdownloadRate(),v);
 						}
-						counter1++;
 					}
 				}
-				//System.out.println("Number of peers interested in this peer " + peer_id + " is " + counter1);
 				Set<Entry<Integer, Vector<Integer>>> set = prefNeighborList1.entrySet();
 				Iterator<Entry<Integer, Vector<Integer>>> it = set.iterator();
 				// Start the threads for those neighbors
 				counter = 0;
-				//System.out.println("Before future while");
-				//for(int i = 0; i < neighborInfo.length; i++){
-					//neighborInfo[i].resetDownload();
-				//}
 				while (it.hasNext()) {
 					Map.Entry<Integer, Vector<Integer>> m = (Map.Entry<Integer, Vector<Integer>>) it.next();
 					Vector<Integer> v = m.getValue();
