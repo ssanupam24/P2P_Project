@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 /**
  * This class receives have messages sent after each download and updates the piece index in the bitfield
  *
- *@author Anupam
+ *@author Anupam and Abhishek
  *
  */
 

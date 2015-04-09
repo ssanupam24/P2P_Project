@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 
 /*
- * @author Abhishek and Anupam
+ * @author Anupam
  * @description: this class is responsible for file writing and file reading and fragmenting it into number of chunks 
  * depending on the chunk size.
  * 
