@@ -96,7 +96,7 @@ public class Download implements Callable<Object> {
 				
 			}
 			catch(Exception e){
-				e.printStackTrace();
+				return new Object();
 			}
 		}
 	}

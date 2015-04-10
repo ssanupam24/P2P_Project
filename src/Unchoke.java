@@ -41,7 +41,7 @@ public class Unchoke implements Callable<Object> {
 	{
 		boolean finished;
 		int pieceIndex;
-		if(selfInfo.getNeighborChokedState().get() == 2){
+		if(selfInfo.getNeighborChokedState().get() == 2 || selfInfo.getBitField().getFinished()){
 			return new Object();
 		}
 		//Send Unchoke to the peer that created this callable and then start uploading
@@ -52,29 +52,10 @@ public class Unchoke implements Callable<Object> {
 			m.setType(Message.unchoke);
 			m.sendMessage(output);
 		}
-		//Change the value of the choke state to preferred if OptUnchoke
-		//For the time being
-		if(selfInfo.getNeighborChokedState().get() == 2){
-			return new Object();
-		}
-			//selfInfo.getNeighborChokedState().set(1);
 		long startTimer = System.currentTimeMillis();
-		//Add the logic for neighbor selection or have that in PeerInfo class and submit this callable only
-		//for those neighbors, seems like it's efficient
+		
 		while(true){
-			/*finished = false;
-			int counter = 0;
-			//Check whether all the peers have downloaded the entire file or not
-			for(int i = 0; i < neighborArray.length; i++){
-				if(neighborArray[i].hasFinished()) {
-					counter++;
-				}
-			}
-			if(counter == neighborArray.length)
-				finished = true;
-			//if yes then break from the loop and return an Object to keep track of the task in peerProcess
-			if(finished)
-				return new Object();*/
+			
 			if(selfInfo.getBitField().getFinished())
 				return new Object();
 			//Add the not interested message condition	

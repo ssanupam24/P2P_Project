@@ -87,18 +87,7 @@ public class OptUnchoke implements Callable<Object> {
 			startTimer = System.currentTimeMillis();
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
-				//Check to see if all the neighbors are done downloading
-				/*finished = true;
-				//Check whether all the peers have downloaded the entire file or not
-				for(int i = 0; i < neighborArray.length; i++){
-					if(!neighborArray[i].hasFinished()) {
-						finished = false;
-						break;
-					}
-				}
-				//if yes then break from the loop and return null
-				if(finished)
-					return new Object();*/
+				
 				//If the selected peer is done downloading then exit from the loop and select a new peer
 				if(neighborArray[index].getBitField().getFinished())
 					break;
@@ -148,17 +137,7 @@ public class OptUnchoke implements Callable<Object> {
 				}
 			}
 			neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
-			/*finished = true;
-			//Check whether all the peers have downloaded the entire file or not
-			for(int i = 0; i < neighborArray.length; i++){
-				if(!neighborArray[i].hasFinished()) {
-					finished = false;
-					break;
-				}
-			}
-			//if yes then break from the loop and return null
-			if(finished)
-				return new Object();*/
+			
 		}
 		}
 		catch (IOException ex) {

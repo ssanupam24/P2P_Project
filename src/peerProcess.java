@@ -57,7 +57,9 @@ public class peerProcess implements Runnable{
 		this.unchokeInterval = peerConfigs.getTimeUnchoke();
 		
 	}
-	
+	/*
+	 * This function starts the peer to peer protocol and it is run for each peer
+	 */
 	public void run()
 	{
 		//Finished flag setup after checking the whole file value from bitfield
@@ -139,17 +141,8 @@ public class peerProcess implements Runnable{
 				neighborInfo[j].getUploadSocket().close();
 			}
 			
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		}
-		catch (Exception e)
-		{
+		} 
+		catch (Exception e) {
 			try{
 			log.completeDownloadLog();
 			filePointer.getFile().close();
@@ -166,15 +159,17 @@ public class peerProcess implements Runnable{
 				neighborInfo[j].getHaveSocket().close();
 				neighborInfo[j].getDownloadSocket().close();
 				neighborInfo[j].getUploadSocket().close();
-			}
+				}
+			System.exit(1);
 			}
 			catch(Exception e1){
-				
+				e1.printStackTrace();
 			}
-		}
-		//printNeighborInfo();	
+		}	
 	}
-	// Need to add flag if you have the entire file to skip the download and have callable thread
+	/*
+	 * This function takes care of the unchoker process. It selects preferred neighbors and spawns thread for each preferred neighbors.
+	 */
 	public synchronized void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
 		System.out.println("Uploading process starts");
@@ -204,6 +199,7 @@ public class peerProcess implements Runnable{
 			prefList.clear();
 			uploadList.clear();
 			if(fullFile) {
+				//this logic is for those peers that have the full file.
 				//System.out.println("Choose pref neighbors");
 				counter = 0;
 				for(int k = 0; k < neighborInfo.length && counter < peerConfigs.getPrefNeighbors(); k++){
@@ -305,7 +301,9 @@ public class peerProcess implements Runnable{
 					neighborInfo[i].getPeerId(), neighborInfo[i].getChokedByNeighborState());
 		}
 	}
-	
+	/*
+	 * This function sets up the client and server sockets and also sends/receives handshake/bitfield messages
+	 */
 	public synchronized void setupNeighborAndSelfInfo() throws Exception
 	{
 		int currPeerID;
@@ -355,7 +353,9 @@ public class peerProcess implements Runnable{
 			setSelfInitialization(uploadServerSocket, downloadServerSocket, haveServerSocket, i); 
 		}
 	}
-	
+	/*
+	 * This function is for setting up the server sockets and accepting connections from clients
+	 */
 	public synchronized void setSelfInitialization(ServerSocket uploadServerSocket, 
 			ServerSocket downloadServerSocket, ServerSocket haveServerSocket, int index) throws Exception
 	{
@@ -432,7 +432,9 @@ public class peerProcess implements Runnable{
 			m3.sendMessage(output);
 		}
 	}
-	
+	/*
+	 * This function is used to set up the client sockets and make connections with the servers
+	 */
 	public synchronized void setOthersInitialization(NeighborInfo otherInfo, String host, int downloadPort, int uploadPort, int havePort)throws Exception
 	{
 		int neighborID = otherInfo.getPeerId();
@@ -506,7 +508,9 @@ public class peerProcess implements Runnable{
 			log.interestedLog(otherInfo.getPeerId());
 		}
 	}
-
+	/*
+	 * This function validates the handshake message received by the peers
+	 */
 	public synchronized boolean handshakeValid(HandshakeMessage hs, int neighborID)
 	{
 		int peerID = hs.getPeerID();
