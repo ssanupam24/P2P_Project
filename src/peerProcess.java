@@ -124,7 +124,7 @@ public class peerProcess implements Runnable{
 					haveList.get(j).get();
 				}
 			}
-			log.completeDownloadLog();
+			//log.completeDownloadLog();
 			filePointer.getFile().close();
 			downloadPool.shutdown();
 			havePool.shutdown();
@@ -144,7 +144,7 @@ public class peerProcess implements Runnable{
 		} 
 		catch (Exception e) {
 			try{
-			log.completeDownloadLog();
+			//log.completeDownloadLog();
 			filePointer.getFile().close();
 			downloadPool.shutdown();
 			havePool.shutdown();
@@ -157,20 +157,20 @@ public class peerProcess implements Runnable{
 			for(int j = 0; j < neighborInfo.length; j++){
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
-				neighborInfo[j].getDownloadSocket().close();
+				//neighborInfo[j].getDownloadSocket().close();
 				neighborInfo[j].getUploadSocket().close();
 				}
-			System.exit(1);
+			System.exit(0);
 			}
 			catch(Exception e1){
-				e1.printStackTrace();
+				System.exit(0);
 			}
 		}	
 	}
 	/*
 	 * This function takes care of the unchoker process. It selects preferred neighbors and spawns thread for each preferred neighbors.
 	 */
-	public synchronized void unchokerProcess() throws IOException, InterruptedException, ExecutionException{
+	public synchronized void unchokerProcess() throws Exception{
 		//This map will have all my preferred neighbors sorted in descending order according to download rates
 		System.out.println("Uploading process starts");
 		Vector<Integer> prefList = new Vector<Integer>();
@@ -361,8 +361,8 @@ public class peerProcess implements Runnable{
 	{
 		System.out.println("Server started");
 		neighborInfo[index] = new NeighborInfo(peerConfigs.getTotalPieces());
-		// Sets up sockets to access the server sockets' I/O streams
-		// TODO: Originally 
+		
+		// Sets up sockets to access the server sockets' I/O streams 
 		Socket downloadSocket = downloadServerSocket.accept();
 		Socket uploadSocket = uploadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
@@ -374,6 +374,7 @@ public class peerProcess implements Runnable{
 		neighborInfo[index].setDownloadSocket(downloadSocket);
 		neighborInfo[index].setHaveSocket(haveSocket);
 		System.out.println("Accepted connections");
+		
 		InputStream input = downloadSocket.getInputStream();
 		OutputStream output = downloadSocket.getOutputStream();
 		
@@ -441,6 +442,7 @@ public class peerProcess implements Runnable{
 		InputStream input;
 		OutputStream output;
 		System.out.println("Client sockets are being created");
+		
 		// set up client sockets for peer apart from local server peer
 		Socket uploadClientSocket = new Socket(host, downloadPort);
 		Socket downloadClientSocket = new Socket(host, uploadPort);
@@ -513,7 +515,6 @@ public class peerProcess implements Runnable{
 	 */
 	public synchronized boolean handshakeValid(HandshakeMessage hs, int neighborID)
 	{
-		int peerID = hs.getPeerID();
 		
 		if(hs.getPeerID() == neighborID && hs.getHandshakeHeader().equals("P2PFILESHARINGPROJ"))
 			return true;

@@ -52,7 +52,7 @@ public class OptUnchoke implements Callable<Object> {
 			finished = false;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
-				if((neighborArray[index].getBitField().checkPiecesInterested(bits))){
+				if((neighborArray[index].getBitField().checkPiecesInterested(bits)) && (neighborArray[index].getNeighborChokedState().get() == 0)){
 					if((neighborArray[index].getNeighborChokedState().get() == 0)) {
 						flag = true;
 						neighborArray[index].getNeighborChokedState().set(2);
@@ -78,12 +78,12 @@ public class OptUnchoke implements Callable<Object> {
 			Message m = new Message();
 			//Send unchoke message only if choked
 			//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
-			//if(neighborArray[index].getNeighborChokedState().get() == 2){
-			System.out.println("Unchoked from OptUnchoked");
-			m.setType(Message.unchoke);
-			m.setPayload(null);
-			m.sendMessage(output);
-			//}
+			if(neighborArray[index].getNeighborChokedState().get() == 2){
+				System.out.println("Unchoked from OptUnchoked");
+				m.setType(Message.unchoke);
+				m.setPayload(null);
+				m.sendMessage(output);
+			}
 			startTimer = System.currentTimeMillis();
 			//Keep track of the timer and break from this inner loop to reselect a peer
 			while(true){
@@ -93,25 +93,20 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				System.out.println("Before receiving msg in OptUnchoke.\nPeer " + neighborArray[index].getPeerId() + " has total pieces: "
 						+ neighborArray[index].getBitField().getCountFinishedPieces());
-				try{
-				m.receiveMessage(input);
-				}
-				catch(Exception e){
-					return new Object();
-				}
+				m.receiveMessage(input);		
 				System.out.println("Did not get stuck waiting to receive a message in OptUnchoke.");
 				//Add the not interested thing here
 				if(m.getType() == Message.notInterested){
 					logger.notInterestedLog(neighborArray[index].getPeerId());
 					System.out.println("Received notInterested in OptUnchoke from peer.");
-					neighborArray[index].getNeighborChokedState().set(0);
+					neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
 					//break or do something
 					break;
 				}
 				if(m.getType() == Message.request){
 					index1 = ByteIntConversion.byteArrayToInt(m.getPayload());
 					System.out.println("Received a request in OptUnchoked");
-					logger.requestLog(neighborArray[index].getPeerId(), true, index1);
+					//logger.requestLog(neighborArray[index].getPeerId(), true, index1);
 					Piece newPiece = file.readFileForOpt(index1);
 					System.out.println("Piece is read from Optunchoke and now i am sending the piece");
 					byte[] piecelen = ByteIntConversion.intToByteArray(newPiece.getPieceNum());
@@ -136,13 +131,13 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				}
 			}
+			//Just to play safe.
 			neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
-			
+			}
 		}
+		catch (Exception ex) {
+			throw new Exception();
 		}
-		catch (IOException ex) {
-				ex.printStackTrace();
-		}
-		return new Object();
+		
 	}
 }

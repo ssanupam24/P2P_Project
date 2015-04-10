@@ -56,7 +56,7 @@ public class Message
    * The format is as given below:
    * First 4 bytes length of the payload, next 1 byte message type and then the rest is payload
    */
-  public synchronized void sendMessage(OutputStream output) throws IOException
+  public synchronized void sendMessage(OutputStream output) throws Exception
   {
     
 	  try{
@@ -71,7 +71,7 @@ public class Message
 	  output.flush();
 	  }
 	  catch(Exception e){
-		  e.printStackTrace();
+		  throw new Exception();
 	  }
 	  
   }
@@ -79,7 +79,7 @@ public class Message
    * The format is as given below:
    * First 4 bytes length of the payload, next 1 byte message type and then the rest is payload
    */
-  public synchronized void receiveMessage(InputStream input) throws IOException
+  public synchronized void receiveMessage(InputStream input) throws Exception
   {
 	  try{
 		  byte[] receivedLength = new byte[4];
@@ -126,7 +126,7 @@ public class Message
 		  }
 	  }
 	  catch(Exception e){
-		  e.printStackTrace();
+		  throw new Exception();
 	  }
 	  
   }

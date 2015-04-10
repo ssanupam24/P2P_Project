@@ -11,14 +11,14 @@ public class BitField {
 	private final int totPieces;
 	private AtomicBoolean[] bitPieceIndex;
 	private AtomicInteger countFinishedPieces;
-	private boolean finished;
+	private AtomicBoolean finished;
 	private Vector<Integer> randomPieces;
 	
 	public BitField(int totPieces){
 		this.totPieces = totPieces;
 		bitPieceIndex = new AtomicBoolean[totPieces];
 		countFinishedPieces = new AtomicInteger(0);
-		finished = false;
+		finished = new AtomicBoolean();
 		randomPieces = new Vector<Integer>();
 		for(int i =0; i < totPieces; i++){
 			bitPieceIndex[i] = new AtomicBoolean();
@@ -71,7 +71,7 @@ public class BitField {
 			}
 		}
 		if(countFinishedPieces.get() == totPieces)
-			finished = true;
+			finished.set(true);
 	}
 	
 	//This function is used to change a bit field to binary string of 0's and 1's just for verification.
@@ -87,7 +87,7 @@ public class BitField {
 	}
 	
 	public synchronized boolean getFinished(){
-		return finished;
+		return finished.get();
 	}
 	public synchronized int getBitPieceIndexLength(){
 		return bitPieceIndex.length;
@@ -102,7 +102,7 @@ public class BitField {
 			bitPieceIndex[index].set(true);
 			countFinishedPieces.set(countFinishedPieces.get() + 1);
 			if(countFinishedPieces.get() == totPieces)
-				finished = true;
+				finished.set(true);
 		}
 	}
 	
@@ -110,7 +110,7 @@ public class BitField {
 		if(bitPieceIndex[index].get() == true){
 			bitPieceIndex[index].set(false);
 			countFinishedPieces.set(countFinishedPieces.get() - 1);
-			finished = false;
+			finished.set(false);
 		}
 	}
 	
@@ -119,7 +119,7 @@ public class BitField {
 			bitPieceIndex[i].set(true);
 		}
 		countFinishedPieces.set(totPieces);
-		finished = true;
+		finished.set(true);
 	}
  
 	//Check if the piece is not present then return interested

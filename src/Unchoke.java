@@ -39,11 +39,11 @@ public class Unchoke implements Callable<Object> {
 	}
 	public Object call() throws Exception 
 	{
-		boolean finished;
 		int pieceIndex;
 		if(selfInfo.getNeighborChokedState().get() == 2 || selfInfo.getBitField().getFinished()){
 			return new Object();
 		}
+		try{
 		//Send Unchoke to the peer that created this callable and then start uploading
 		//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 		if(selfInfo.getNeighborChokedState().compareAndSet(0, 1)){
@@ -59,20 +59,17 @@ public class Unchoke implements Callable<Object> {
 			if(selfInfo.getBitField().getFinished())
 				return new Object();
 			//Add the not interested message condition	
-			try{
+			
 			m.receiveMessage(input);
-			}
-			catch(Exception e){
-				return new Object();
-			}
 			if(m.getType() == Message.notInterested){
 				logger.notInterestedLog(selfInfo.getPeerId());
+				selfInfo.getNeighborChokedState().compareAndSet(1, 0);
 				//break or do something
 				break;
 			}
 			if(m.getType() == Message.request){
 				pieceIndex = ByteIntConversion.byteArrayToInt(m.getPayload());
-				logger.requestLog(selfInfo.getPeerId(), true, pieceIndex);
+				//logger.requestLog(selfInfo.getPeerId(), true, pieceIndex);
 				Piece p = file.readFile(pieceIndex);
 				byte[] piecelen = ByteIntConversion.intToByteArray(p.getPieceNum());
 				byte[] chunk = new byte[piecelen.length + p.getPieceContent().length];
@@ -84,8 +81,6 @@ public class Unchoke implements Callable<Object> {
 			}
 			if((System.currentTimeMillis() - startTimer) >= (time * 1000)){
 				// if the neighbor is not your preferred neighbor, then choke
-					//see or delete it
-				//m.receiveMessage(input);
 				if(selfInfo.getNeighborChokedState().compareAndSet(1, 0)) {
 					m.setType(Message.choke);
 					m.setPayload(null);
@@ -95,6 +90,11 @@ public class Unchoke implements Callable<Object> {
 				break;
 			}
 		}
+		}
+		catch(Exception e){
+			throw new Exception();
+		}
+		//To play safe
 		selfInfo.getNeighborChokedState().compareAndSet(1, 0);
 		return new Object();
 	}

@@ -58,16 +58,12 @@ public class HaveMessage implements Callable<Object> {
 			System.out.println("##Before receiving msg in have.");
 			try{
 			m.receiveMessage(input);
-			}
-			catch(Exception e){
-				return new Object();
-			}
 			System.out.println("##After receiving msg in have.");
 			if(m.getType() == Message.have){
 				byte[] payload = m.getPayload();
 				pieceIndex = ByteIntConversion.byteArrayToInt(payload);
 				selfInfo.getBitField().setBitToTrue(pieceIndex);
-				//logger.haveLog(selfInfo.getPeerId(), pieceIndex);
+				logger.haveLog(selfInfo.getPeerId(), pieceIndex);
 				//Send interested/not message here
 				if(bits.checkPiecesInterested(selfInfo.getBitField())){
 					m.setType(Message.interested);
@@ -85,6 +81,10 @@ public class HaveMessage implements Callable<Object> {
 			}
 			else if(m.getType() == Message.notInterested){
 				logger.notInterestedLog(selfInfo.getPeerId());
+			}
+			}
+			catch(Exception e){
+				return new Object();
 			}
 		}
 	}
