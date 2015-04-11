@@ -18,6 +18,7 @@ public class LoggerPeer
 	private File file;
 	private FileWriter writer;
 	private BufferedWriter buffer;
+	private boolean downloadComplete = false;
 	
 	public LoggerPeer(int peerId) throws IOException
 	{
@@ -143,8 +144,12 @@ public class LoggerPeer
 	
 	public synchronized void completeDownloadLog()
 	{
-		String str = getTime() + ": Peer " + peerId + " has downloaded the complete file.\n";
-		writeToFile(str);
+		//Bad design
+		if(!downloadComplete) {
+			String str = getTime() + ": Peer " + peerId + " has downloaded the complete file.\n";
+			writeToFile(str);
+			downloadComplete = true;
+		}
 	}
 	
 	// TODO: Remove later. Just for debugging purposes

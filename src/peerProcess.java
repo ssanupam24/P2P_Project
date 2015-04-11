@@ -125,7 +125,7 @@ public class peerProcess implements Runnable{
 				}
 			}
 			//log.completeDownloadLog();
-			filePointer.getFile().close();
+			
 			downloadPool.shutdown();
 			havePool.shutdown();
 			optThread.shutdown();
@@ -140,12 +140,11 @@ public class peerProcess implements Runnable{
 				neighborInfo[j].getDownloadSocket().close();
 				neighborInfo[j].getUploadSocket().close();
 			}
-			
+			filePointer.getFile().close();
 		} 
 		catch (Exception e) {
 			try{
 			//log.completeDownloadLog();
-			filePointer.getFile().close();
 			downloadPool.shutdown();
 			havePool.shutdown();
 			optThread.shutdown();
@@ -157,9 +156,10 @@ public class peerProcess implements Runnable{
 			for(int j = 0; j < neighborInfo.length; j++){
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
-				//neighborInfo[j].getDownloadSocket().close();
+				neighborInfo[j].getDownloadSocket().close();
 				neighborInfo[j].getUploadSocket().close();
 				}
+			filePointer.getFile().close();
 			System.exit(0);
 			}
 			catch(Exception e1){
@@ -180,16 +180,20 @@ public class peerProcess implements Runnable{
 		boolean finished;
 		Random randomGenerator = new Random();
 		int counter;
+		int counter1 = 0;
 		int index;
 		Vector<Future<Object>> uploadList = new Vector<Future<Object>>();
 		//Message m1 = new Message();
 		while(true){
+			try {
 			finished = true;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborInfo.length; i++){
-				neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0);
+				//neighborInfo[i].getNeighborChokedState().compareAndSet(1, 0);
 				if (!neighborInfo[i].hasFinished())
 					finished = false;
+				
+				//System.out.println("Peer " + neighborInfo[i].getPeerId() + " # pieces " + neighborInfo[i].getBitField().getCountFinishedPieces());
 			}
 			//if yes then break from the loop and return null
 			if(finished)
@@ -288,7 +292,14 @@ public class peerProcess implements Runnable{
 			uploadPool.shutdownNow();
 			uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		}
-		System.out.println("Uploading done");
+		catch(Exception e){
+			//uploadPool.shutdownNow();
+			counter1++;
+			if(counter1 == neighborInfo.length)
+				break;
+		}
+	}
+		//System.out.println("Uploading done");
 		//Finally the pool is shutdown 
 		uploadPool.shutdownNow();
 	}

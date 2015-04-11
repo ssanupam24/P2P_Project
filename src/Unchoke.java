@@ -47,7 +47,7 @@ public class Unchoke implements Callable<Object> {
 		//Send Unchoke to the peer that created this callable and then start uploading
 		//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 		if(selfInfo.getNeighborChokedState().compareAndSet(0, 1)){
-			System.out.println("Unchoked from unchoked callable");
+			// System.out.println("Unchoked from unchoked callable");
 			m.setPayload(null);
 			m.setType(Message.unchoke);
 			m.sendMessage(output);
@@ -86,7 +86,7 @@ public class Unchoke implements Callable<Object> {
 					m.setPayload(null);
 					m.sendMessage(output);
 				}
-				System.out.println("Timer expired" + selfInfo.getPeerId());
+				//System.out.println("Timer expired" + selfInfo.getPeerId());
 				break;
 			}
 		}
@@ -95,7 +95,7 @@ public class Unchoke implements Callable<Object> {
 			throw new Exception();
 		}
 		//To play safe
-		selfInfo.getNeighborChokedState().compareAndSet(1, 0);
+		//selfInfo.getNeighborChokedState().compareAndSet(1, 0);
 		return new Object();
 	}
 	

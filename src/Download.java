@@ -26,7 +26,7 @@ public class Download implements Callable<Object> {
 		this.peerId = peerId;
 		this.selfInfo = selfInfo;
 	}
-	public Object call() throws IOException{
+	public Object call() throws Exception{
 		Socket s = selfInfo.getDownloadSocket();
 		InputStream input = s.getInputStream();
 		OutputStream output = s.getOutputStream();
@@ -38,8 +38,9 @@ public class Download implements Callable<Object> {
 				//TODO: Don't need to check the neighbor's download, check yours and quit from the callable
 				if(bits.getFinished()) {
 					logger.completeDownloadLog();
-					selfInfo.getDownloadSocket().close();
-					return new Object();
+					//selfInfo.getDownloadSocket().close();
+					//return new Object();
+					//break;
 				}
 				m.receiveMessage(input);
 				if(m.getType() == Message.unchoke){
@@ -48,7 +49,9 @@ public class Download implements Callable<Object> {
 					while(true){
 						if(bits.getFinished()) {
 							logger.completeDownloadLog();
-							return new Object();
+							break;
+							//selfInfo.getDownloadSocket().close();
+							//return new Object();
 						}
 						pieceIndex = bits.setInterestedPiece(selfInfo.getBitField());
 						//If there are no interesting piece then the function returns -1
@@ -101,7 +104,8 @@ public class Download implements Callable<Object> {
 				
 			}
 			catch(Exception e){
-				return new Object();
+				//return new Object();
+				throw new Exception();
 			}
 		}
 	}

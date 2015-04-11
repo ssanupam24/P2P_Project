@@ -55,10 +55,10 @@ public class HaveMessage implements Callable<Object> {
 			//if yes then break from the loop and return null
 			if(finished)
 				return new Object();
-			System.out.println("##Before receiving msg in have.");
+			// System.out.println("##Before receiving msg in have.");
 			try{
 			m.receiveMessage(input);
-			System.out.println("##After receiving msg in have.");
+			// System.out.println("##After receiving msg in have.");
 			if(m.getType() == Message.have){
 				byte[] payload = m.getPayload();
 				pieceIndex = ByteIntConversion.byteArrayToInt(payload);
