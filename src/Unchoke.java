@@ -11,7 +11,7 @@ import java.util.concurrent.Callable;
  * @author Anupam and Abhishek
  *
  */
-public class Unchoke implements Callable<Object> {
+public class Unchoke implements Callable<Integer> {
 	
 	private int peerId;
 	private NeighborInfo selfInfo;
@@ -37,11 +37,11 @@ public class Unchoke implements Callable<Object> {
 		this.file = file;
 		this.time = time;
 	}
-	public Object call() throws Exception 
+	public Integer call() throws Exception 
 	{
 		int pieceIndex;
-		if(selfInfo.getNeighborChokedState().get() == 2 || selfInfo.getBitField().getFinished()){
-			return new Object();
+		if(selfInfo.getNeighborChokedState().get() == 2){
+			return selfInfo.getPeerId();
 		}
 		try{
 		//Send Unchoke to the peer that created this callable and then start uploading
@@ -56,8 +56,8 @@ public class Unchoke implements Callable<Object> {
 		
 		while(true){
 			
-			if(selfInfo.getBitField().getFinished())
-				return new Object();
+			//if(selfInfo.getBitField().getFinished())
+				//return selfInfo.getPeerId();
 			//Add the not interested message condition	
 			
 			m.receiveMessage(input);
@@ -92,11 +92,13 @@ public class Unchoke implements Callable<Object> {
 		}
 		}
 		catch(Exception e){
+			selfInfo.getDoneUpload().set(1);
 			throw new Exception();
+			//return selfInfo.getPeerId();
 		}
 		//To play safe
 		//selfInfo.getNeighborChokedState().compareAndSet(1, 0);
-		return new Object();
+		return selfInfo.getPeerId();
 	}
 	
 }

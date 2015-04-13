@@ -52,15 +52,15 @@ public class OptUnchoke implements Callable<Object> {
 			finished = false;
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
-				if((neighborArray[index].getBitField().checkPiecesInterested(bits)) && (neighborArray[index].getNeighborChokedState().get() == 0)){
-					if((neighborArray[index].getNeighborChokedState().get() == 0)) {
+				if((neighborArray[index].getBitField().checkPiecesInterested(bits)) && (neighborArray[index].getNeighborChokedState().get() == 0) && (neighborArray[index].getDoneUpload().get() == 0)){
+					//if((neighborArray[index].getNeighborChokedState().get() == 0)) {
 						flag = true;
 						neighborArray[index].getNeighborChokedState().set(2);
-					}
+					//}
 				}
 				counter = 0;
 				for(int i = 0; i < neighborArray.length; i++){
-					if(neighborArray[i].hasFinished()) {
+					if(neighborArray[i].getDoneUpload().get() == 1) {
 						counter++;
 					}
 				}
@@ -78,7 +78,7 @@ public class OptUnchoke implements Callable<Object> {
 			Message m = new Message();
 			//Send unchoke message only if choked
 			//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
-			if(neighborArray[index].getNeighborChokedState().get() == 2){
+			if((neighborArray[index].getNeighborChokedState().get() == 2) && (neighborArray[index].getDoneUpload().get() == 0)){
 				// System.out.println("Unchoked from OptUnchoked");
 				m.setType(Message.unchoke);
 				m.setPayload(null);
@@ -89,7 +89,7 @@ public class OptUnchoke implements Callable<Object> {
 			while(true){
 				
 				//If the selected peer is done downloading then exit from the loop and select a new peer
-				if(neighborArray[index].getBitField().getFinished())
+				if(neighborArray[index].getDoneUpload().get() == 1)
 					break;
 				//System.out.println("Before receiving msg in OptUnchoke.\nPeer " + neighborArray[index].getPeerId() + " has total pieces: "
 					//	+ neighborArray[index].getBitField().getCountFinishedPieces());
@@ -132,7 +132,7 @@ public class OptUnchoke implements Callable<Object> {
 				}
 			}
 			//Just to play safe.
-			//neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
+			neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
 			}
 		}
 		catch (Exception ex) {

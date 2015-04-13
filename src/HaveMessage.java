@@ -44,13 +44,17 @@ public class HaveMessage implements Callable<Object> {
 		int pieceIndex;
 		while(true){
 			
-			finished = true;
+			finished = false;
+			int counter = 0;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborArray.length; i++){
-				if(!neighborArray[i].hasFinished()) {
-					finished = false;
-					break;
+				if(neighborArray[i].getDoneUpload().get() == 1) {
+					counter++;
 				}
+			}
+			if(counter == neighborArray.length) {
+				finished = true;
+				break;
 			}
 			//if yes then break from the loop and return null
 			if(finished)
@@ -87,5 +91,6 @@ public class HaveMessage implements Callable<Object> {
 				return new Object();
 			}
 		}
+		return new Object();
 	}
 	}

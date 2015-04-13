@@ -16,6 +16,7 @@ public class NeighborInfo {
 	private Socket downloadSocket;
 	private Socket haveSocket;
 	private AtomicInteger downloadRate;
+	private AtomicInteger doneUpload;
 	
 	public NeighborInfo(int numPieces) throws UnknownHostException, IOException
 	{
@@ -23,9 +24,13 @@ public class NeighborInfo {
 		neighborChokedState = new AtomicInteger(0);
 		bitField = new BitField(numPieces);
 		downloadRate = new AtomicInteger(0);
+		doneUpload = new AtomicInteger(0);
 	}
 	public synchronized int getPeerId(){
 		return peer_id;
+	}
+	public synchronized AtomicInteger getDoneUpload(){
+		return doneUpload;
 	}
 	public synchronized BitField getBitField(){
 		return bitField;
