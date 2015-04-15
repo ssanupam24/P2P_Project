@@ -111,24 +111,34 @@ public class peerProcess implements Runnable{
 			//Now check all the future objects and shut down threads if done with 
 			//receiving and sending all the pieces
 			optFuture.get();
+			System.out.println("Got get from Opt thread");
+			optThread.shutdown();
 			if(!fullFile) {
 				for(int j = 0; j < neighborInfo.length; j++){
-					System.out.println("Waiting for return in get");
+					System.out.println("Waiting for return in get download");
 					downList.get(j).get();
-					haveList.get(j).get();
+					//haveList.get(j).get();
 				}
+				downloadPool.shutdown();
+				for(int j = 0; j < neighborInfo.length; j++){
+					System.out.println("Waiting for return in get have");
+					haveList.get(j).get();
+					//haveList.get(j).get();
+				}
+				havePool.shutdown();
 			}
 			else{
 				for(int j = 0; j < neighborInfo.length; j++){
 					System.out.println("Waiting for return in get");
 					haveList.get(j).get();
 				}
+				havePool.shutdown();
 			}
 			//log.completeDownloadLog();
 			
-			downloadPool.shutdown();
-			havePool.shutdown();
-			optThread.shutdown();
+			//downloadPool.shutdown();
+			//havePool.shutdown();
+			//optThread.shutdown();
 			//Hopefully all the tasks are completed successfully and the control reaches here, 
 			//now its celebration time :)
 			uploadServerSocket.close();
@@ -137,10 +147,11 @@ public class peerProcess implements Runnable{
 			for(int j = 0; j < neighborInfo.length; j++){
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
-				neighborInfo[j].getDownloadSocket().close();
-				neighborInfo[j].getUploadSocket().close();
+				//neighborInfo[j].getDownloadSocket().close();
+				//neighborInfo[j].getUploadSocket().close();
 			}
 			filePointer.getFile().close();
+			System.exit(0);
 		} 
 		catch (Exception e) {
 			try{
@@ -156,8 +167,8 @@ public class peerProcess implements Runnable{
 			for(int j = 0; j < neighborInfo.length; j++){
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
-				neighborInfo[j].getDownloadSocket().close();
-				neighborInfo[j].getUploadSocket().close();
+				//neighborInfo[j].getDownloadSocket().close();
+				//neighborInfo[j].getUploadSocket().close();
 				}
 			filePointer.getFile().close();
 			System.exit(0);
@@ -196,6 +207,14 @@ public class peerProcess implements Runnable{
 			//if yes then break from the loop and return null
 			if(finished)
 				break;*/
+			counter = 0;
+			for(int i = 0; i < neighborInfo.length; i++){
+				if(neighborInfo[i].getDoneUpload().get() == 1)
+					counter++;
+			}
+			if(counter == totalNeighbors)
+				break;
+			counter = 0;
 			prefNeighborList.clear();
 			prefNeighborList1.clear();
 			prefList.clear();
@@ -294,11 +313,12 @@ public class peerProcess implements Runnable{
 		catch(Exception e){
 			//uploadPool.shutdownNow();
 			counter1++;
+			System.out.println("Counter value is" + counter1);
 			if(counter1 == totalNeighbors)
 				break;
 		}
 	}
-		//System.out.println("Uploading done");
+		System.out.println("Uploading done");
 		//Finally the pool is shutdown 
 		uploadPool.shutdownNow();
 	}

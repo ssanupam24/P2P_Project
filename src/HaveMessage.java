@@ -40,12 +40,13 @@ public class HaveMessage implements Callable<Object> {
 	}
 	public Object call() throws Exception 
 	{
-		boolean finished;
+		//boolean finished;
 		int pieceIndex;
+		int counter;
 		while(true){
 			
-			finished = false;
-			int counter = 0;
+			//finished = false;
+			counter = 0;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborArray.length; i++){
 				if(neighborArray[i].getDoneUpload().get() == 1) {
@@ -53,12 +54,11 @@ public class HaveMessage implements Callable<Object> {
 				}
 			}
 			if(counter == neighborArray.length) {
-				finished = true;
-				break;
+				return new Object();
 			}
 			//if yes then break from the loop and return null
-			if(finished)
-				return new Object();
+			//if(finished)
+				//return new Object();
 			// System.out.println("##Before receiving msg in have.");
 			try{
 			m.receiveMessage(input);
@@ -91,6 +91,5 @@ public class HaveMessage implements Callable<Object> {
 				return new Object();
 			}
 		}
-		return new Object();
 	}
 	}
