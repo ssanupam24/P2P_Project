@@ -55,6 +55,28 @@ public class OptUnchoke implements Callable<Object> {
 			//Select a peer randomly for optUnchoke
 			flag = false;
 			finished = false;
+			counter = 0;
+			for(int i = 0; i < neighborArray.length; i++){
+				if(neighborArray[i].getDoneUpload().get() == 1) {
+					counter++;
+				}
+			}
+			
+			if(fullFile) {
+				if(counter == noOfPeersToUpload){
+					finished = true;
+					//flag = true;
+				}
+			}
+			else{
+				if(counter == (noOfPeersToUpload - 1)) {
+					finished = true;
+					//flag = true;
+				}
+			}
+			if(finished)
+				return new Object();
+			
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if((neighborArray[index].getBitField().checkPiecesInterested(bits)) && (neighborArray[index].getNeighborChokedState().get() == 0) && (neighborArray[index].getDoneUpload().get() == 0)){
@@ -63,31 +85,9 @@ public class OptUnchoke implements Callable<Object> {
 						neighborArray[index].getNeighborChokedState().set(2);
 					//}
 				}
-				counter = 0;
-				for(int i = 0; i < neighborArray.length; i++){
-					if(neighborArray[i].getDoneUpload().get() == 1) {
-						counter++;
-					}
-				}
-				/*if(counter == neighborArray.length){
-					finished = true;
-					flag = true;
-				}*/
-				if(fullFile) {
-					if(counter == noOfPeersToUpload){
-						finished = true;
-						flag = true;
-					}
-				}
-				else{
-					if(counter == (noOfPeersToUpload - 1)) {
-						finished = true;
-						flag = true;
-					}
-				}
+				
 			}
-			if(finished)
-				return new Object();
+			
 			logger.changeOfOptUnchokedNeighbourLog(neighborArray[index].getPeerId());
 			sock = neighborArray[index].getUploadSocket();
 			input = sock.getInputStream();

@@ -103,6 +103,7 @@ public class Download implements Callable<Object> {
 				
 			}
 			catch(Exception e){
+				selfInfo.getDownloadSocket().close();
 				return new Object();
 				//throw new Exception();
 			}

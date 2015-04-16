@@ -192,6 +192,29 @@ public class peerProcess implements Runnable{
 		Vector<Future<Integer>> uploadList = new Vector<Future<Integer>>();
 		//Message m1 = new Message();
 		while(true){
+			finished = false;
+			counter = 0;
+			for(int i = 0; i < neighborInfo.length; i++){
+				if(neighborInfo[i].getDoneUpload().get() == 1) {
+					counter++;
+				}
+			}
+			
+			if(fullFile) {
+				if(counter == noOfPeersToUpload){
+					finished = true;
+					//flag = true;
+				}
+			}
+			else{
+				if(counter == (noOfPeersToUpload - 1)) {
+					finished = true;
+					//flag = true;
+				}
+			}
+			if(finished)
+				break;
+			counter = 0;
 			try {
 			/*finished = true;
 			//Check whether all the peers have downloaded the entire file or not
