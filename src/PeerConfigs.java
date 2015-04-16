@@ -20,6 +20,7 @@ public class PeerConfigs {
 	private int sizeOfLastPiece;
 	private int totalPieces;
 	private int totalPeers;
+	private int totalPeersWithEntireFile = 0;
 	private ArrayList<Integer> peerList;
 	private ArrayList<String> hostList;
 	private ArrayList<Integer> downloadPortList;
@@ -38,6 +39,9 @@ public class PeerConfigs {
 	
 	public int getPrefNeighbors(){
 		 return prefNeighbors;
+	}
+	public int getTotalPeersWithEntireFile(){
+		return totalPeersWithEntireFile;
 	}
 	public int getTimeUnchoke(){
 		return timeUnchoke;
@@ -193,10 +197,13 @@ public class PeerConfigs {
          		   if(scanner.hasNextInt())
          		   {
          			   wholeFile = scanner.nextInt();
-         			   if(wholeFile == 1)
+         			   if(wholeFile == 1) {
          				   hasWholeFile.add(true);
-         			   else if(wholeFile == 0)
+         				   totalPeersWithEntireFile++;
+         			   }
+         			   else if(wholeFile == 0) {
          				   hasWholeFile.add(false);
+         			   }
          		   }
          		   else
          			   throw new Exception("Error.  You must specify either a 0 or 1 to denote if the peer has the entire file.");

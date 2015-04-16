@@ -22,17 +22,21 @@ public class OptUnchoke implements Callable<Object> {
 	private LoggerPeer logger;
 	private int optInterval;
 	private HandleFile file;
+	private int noOfPeersToUpload;
+	private boolean fullFile;
 	Socket sock;
 	InputStream input;
 	OutputStream output;
 	
-	public OptUnchoke(int id, BitField bits, NeighborInfo[] neighborArray, LoggerPeer logger, int optInterval, HandleFile file){
+	public OptUnchoke(int id, BitField bits, NeighborInfo[] neighborArray, LoggerPeer logger, int optInterval, HandleFile file, boolean fullFile, int noOfPeersToUpload){
 		this.neighborArray = neighborArray;
 		this.bits = bits;
 		this.peerId = id;
 		this.logger = logger;
 		this.file = file;
 		this.optInterval = optInterval;
+		this.fullFile = fullFile;
+		this.noOfPeersToUpload = noOfPeersToUpload;
 	}
 	public Object call() throws Exception 
 	{
@@ -44,9 +48,10 @@ public class OptUnchoke implements Callable<Object> {
 		long startTimer;
 		
 		int counter = 0;
-		try {
+		
 		//PeerInfo.optimisticUnchokedPeer = PeerInfo.chokedInterested.get(index);
 		while(true) {
+			try {
 			//Select a peer randomly for optUnchoke
 			flag = false;
 			finished = false;
@@ -64,9 +69,21 @@ public class OptUnchoke implements Callable<Object> {
 						counter++;
 					}
 				}
-				if(counter == neighborArray.length){
+				/*if(counter == neighborArray.length){
 					finished = true;
 					flag = true;
+				}*/
+				if(fullFile) {
+					if(counter == noOfPeersToUpload){
+						finished = true;
+						flag = true;
+					}
+				}
+				else{
+					if(counter == (noOfPeersToUpload - 1)) {
+						finished = true;
+						flag = true;
+					}
 				}
 			}
 			if(finished)
@@ -131,13 +148,13 @@ public class OptUnchoke implements Callable<Object> {
 					break;
 				}
 			}
-			//Just to play safe.
-			neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
 			}
+			catch (Exception ex) {
+				neighborArray[index].getDoneUpload().compareAndSet(0, 1);
+				//return new Object();
+			}
+			//Just to play safe.
+			neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);		
 		}
-		catch (Exception ex) {
-			return new Object();
-		}
-		
 	}
 }

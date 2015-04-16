@@ -93,7 +93,6 @@ public class Unchoke implements Callable<Integer> {
 		}
 		catch(Exception e){
 			selfInfo.getDoneUpload().set(1);
-			selfInfo.getUploadSocket().close();
 			throw new Exception();
 			//return selfInfo.getPeerId();
 		}

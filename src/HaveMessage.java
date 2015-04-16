@@ -25,14 +25,18 @@ public class HaveMessage implements Callable<Object> {
 	private OutputStream output;
 	private Message m;
 	private BitField bits;
+	private boolean fullFile;
+	private int noOfPeersToUpload;
 	
-	public HaveMessage(int id, NeighborInfo selfInfo, LoggerPeer logger, NeighborInfo[] neighborArray, BitField bits) throws IOException{
+	public HaveMessage(int id, NeighborInfo selfInfo, LoggerPeer logger, NeighborInfo[] neighborArray, BitField bits, boolean fullFile, int noOfPeersToUpload) throws IOException{
 		this.selfInfo = selfInfo;
 		//PeerID is the host(server) peer process
 		this.peerId = id;
 		this.logger = logger;
 		this.neighborArray = neighborArray;
 		this.bits = bits;
+		this.fullFile = fullFile;
+		this.noOfPeersToUpload = noOfPeersToUpload;
 		m = new Message();
 		sock = selfInfo.getHaveSocket();
 		input = sock.getInputStream();
@@ -40,25 +44,35 @@ public class HaveMessage implements Callable<Object> {
 	}
 	public Object call() throws Exception 
 	{
-		//boolean finished;
+		boolean finished;
 		int pieceIndex;
-		int counter;
 		while(true){
 			
-			//finished = false;
-			counter = 0;
+			finished = false;
+			int counter = 0;
 			//Check whether all the peers have downloaded the entire file or not
 			for(int i = 0; i < neighborArray.length; i++){
 				if(neighborArray[i].getDoneUpload().get() == 1) {
 					counter++;
 				}
 			}
-			if(counter == neighborArray.length) {
-				return new Object();
+			/*if(counter == neighborArray.length) {
+				finished = true;
+				break;
+			}*/
+			if(fullFile) {
+				if(counter == noOfPeersToUpload){
+					finished = true;
+				}
+			}
+			else{
+				if(counter == (noOfPeersToUpload - 1)) {
+					finished = true;
+				}
 			}
 			//if yes then break from the loop and return null
-			//if(finished)
-				//return new Object();
+			if(finished)
+				return new Object();
 			// System.out.println("##Before receiving msg in have.");
 			try{
 			m.receiveMessage(input);

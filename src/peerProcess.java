@@ -37,6 +37,7 @@ public class peerProcess implements Runnable{
 	private PeerConfigs peerConfigs;
 	private NeighborInfo[] neighborInfo;
 	private int totalNeighbors;
+	private int noOfPeersToUpload;
 	ServerSocket uploadServerSocket;
 	ServerSocket downloadServerSocket;
 	ServerSocket haveServerSocket;
@@ -55,6 +56,7 @@ public class peerProcess implements Runnable{
 		this.neighborInfo = new NeighborInfo[totalNeighbors];
 		this.optimisticUnchokeInterval = peerConfigs.getTimeOptUnchoke();
 		this.unchokeInterval = peerConfigs.getTimeUnchoke();
+		this.noOfPeersToUpload = peerConfigs.getTotalPeers() - peerConfigs.getTotalPeersWithEntireFile();
 		
 	}
 	/*
@@ -90,45 +92,39 @@ public class peerProcess implements Runnable{
 									bitfield, filePointer, log));
 					downList.add(downFuture);
 					Future<Object> haveFuture = havePool.submit(new HaveMessage(peer_id, rec, log,
-									neighborInfo, bitfield));
+									neighborInfo, bitfield, fullFile, noOfPeersToUpload));
 					haveList.add(haveFuture);
-				
 				}
 			}
 			else{
 				for(int j = 0; j < neighborInfo.length; j++){
 					System.out.println("Submitted have");
 					NeighborInfo rec = neighborInfo[j];
-						Future<Object> haveFuture = havePool.submit(new HaveMessage(peer_id, rec, log,
-										neighborInfo, bitfield));
-						haveList.add(haveFuture);
-					
+					Future<Object> haveFuture = havePool.submit(new HaveMessage(peer_id, rec, log,
+										neighborInfo, bitfield, fullFile, noOfPeersToUpload));
+					haveList.add(haveFuture);
 				}
 			}
-			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer));
+			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer, fullFile, noOfPeersToUpload));
 			//Call unchoker function to start unchoker callable
 			unchokerProcess();
 			//Now check all the future objects and shut down threads if done with 
 			//receiving and sending all the pieces
 			optFuture.get();
-			System.out.println("Got get from Opt thread");
 			optThread.shutdown();
 			if(!fullFile) {
-				for(int j = 0; j < neighborInfo.length; j++){
-					System.out.println("Waiting for return in get download");
+				for(int j = 0; j < downList.size(); j++){
+					System.out.println("Waiting for return in download get");
 					downList.get(j).get();
-					//haveList.get(j).get();
 				}
 				downloadPool.shutdown();
-				for(int j = 0; j < neighborInfo.length; j++){
-					System.out.println("Waiting for return in get have");
+				for(int j = 0; j < haveList.size(); j++){
 					haveList.get(j).get();
-					//haveList.get(j).get();
 				}
 				havePool.shutdown();
 			}
 			else{
-				for(int j = 0; j < neighborInfo.length; j++){
+				for(int j = 0; j < haveList.size(); j++){
 					System.out.println("Waiting for return in get");
 					haveList.get(j).get();
 				}
@@ -148,7 +144,7 @@ public class peerProcess implements Runnable{
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
 				//neighborInfo[j].getDownloadSocket().close();
-				//neighborInfo[j].getUploadSocket().close();
+				neighborInfo[j].getUploadSocket().close();
 			}
 			filePointer.getFile().close();
 			System.exit(0);
@@ -168,7 +164,7 @@ public class peerProcess implements Runnable{
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
 				//neighborInfo[j].getDownloadSocket().close();
-				//neighborInfo[j].getUploadSocket().close();
+				neighborInfo[j].getUploadSocket().close();
 				}
 			filePointer.getFile().close();
 			System.exit(0);
@@ -207,14 +203,6 @@ public class peerProcess implements Runnable{
 			//if yes then break from the loop and return null
 			if(finished)
 				break;*/
-			counter = 0;
-			for(int i = 0; i < neighborInfo.length; i++){
-				if(neighborInfo[i].getDoneUpload().get() == 1)
-					counter++;
-			}
-			if(counter == totalNeighbors)
-				break;
-			counter = 0;
 			prefNeighborList.clear();
 			prefNeighborList1.clear();
 			prefList.clear();
@@ -313,12 +301,17 @@ public class peerProcess implements Runnable{
 		catch(Exception e){
 			//uploadPool.shutdownNow();
 			counter1++;
-			System.out.println("Counter value is" + counter1);
-			if(counter1 == totalNeighbors)
-				break;
+			if(fullFile) {
+				if(counter1 == noOfPeersToUpload)
+					break;
+			}
+			else{
+				if(counter1 == (noOfPeersToUpload - 1))
+					break;
+			}
 		}
 	}
-		System.out.println("Uploading done");
+		//System.out.println("Uploading done");
 		//Finally the pool is shutdown 
 		uploadPool.shutdownNow();
 	}
