@@ -94,7 +94,10 @@ public class LoggerPeer
 	{
 		String peersArr = "";
 		for(int peer : prefList){
-		peersArr = peersArr + peer + ", ";
+			if(peersArr == "")
+				peersArr = peersArr + peer;
+			else
+				peersArr = peersArr + ", " + peer;
 		}
 		String str = getTime() + ": Peer " + peerId + " has the preferred neighbours "+ peersArr + ".\n";
 		writeToFile(str);
@@ -144,7 +147,7 @@ public class LoggerPeer
 	
 	public synchronized void completeDownloadLog()
 	{
-		//Bad design
+		
 		if(!downloadComplete) {
 			String str = getTime() + ": Peer " + peerId + " has downloaded the complete file.\n";
 			writeToFile(str);

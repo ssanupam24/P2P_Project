@@ -117,6 +117,10 @@ public class OptUnchoke implements Callable<Object> {
 					logger.notInterestedLog(neighborArray[index].getPeerId());
 					//System.out.println("Received notInterested in OptUnchoke from peer.");
 					neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
+					while(true){
+						if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000))
+							break;
+					}
 					//break or do something
 					break;
 				}

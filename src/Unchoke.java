@@ -64,6 +64,10 @@ public class Unchoke implements Callable<Integer> {
 			if(m.getType() == Message.notInterested){
 				logger.notInterestedLog(selfInfo.getPeerId());
 				selfInfo.getNeighborChokedState().compareAndSet(1, 0);
+				while(true){
+					if((System.currentTimeMillis() - startTimer) >= (time * 1000))
+						break;
+				}
 				//break or do something
 				break;
 			}

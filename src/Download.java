@@ -87,7 +87,7 @@ public class Download implements Callable<Object> {
 								if(ByteIntConversion.byteArrayToInt(pieceNum) >= bits.getBitPieceIndexLength())
 									throw new Exception();
 								file.writeFile(p);
-								bits.setBitToTrue(pieceIndex);
+								//bits.setBitToTrue(pieceIndex);
 								selfInfo.incdownloadRate();
 								logger.downloadingLog(selfInfo.getPeerId(), ByteIntConversion.byteArrayToInt(pieceNum), bits.getCountFinishedPieces());
 								//Create a have message and send it to all peers

@@ -144,10 +144,10 @@ public class BitField {
 			return -1;
 		else if(randomPieces.size() > 0){
 			int counter = randomGenerator.nextInt(randomPieces.size()); 
-			/*bitPieceIndex[randomPieces.get(counter)].set(true);
+			bitPieceIndex[randomPieces.get(counter)].set(true);
 			countFinishedPieces.set(countFinishedPieces.get() + 1);
 			if(countFinishedPieces.get() == totPieces)
-				finished = true;*/
+				finished.set(true);
 			return randomPieces.get(counter);
 		}
 		/*for(int i = 0; i < totPieces; i++){
