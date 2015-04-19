@@ -13,8 +13,8 @@ import java.util.concurrent.Callable;
  */
 public class Unchoke implements Callable<Integer> {
 	
-	private int peerId;
-	private NeighborInfo selfInfo;
+	private int peerId;  // ID of the peer the callable is created at
+	private NeighborInfo selfInfo;  // The NeighborInfo record of the client peer
 	private LoggerPeer logger;
 	private NeighborInfo[] neighborArray;
 	private Socket sock;
@@ -26,7 +26,6 @@ public class Unchoke implements Callable<Integer> {
 	
 	public Unchoke(int id, NeighborInfo selfInfo, LoggerPeer logger, NeighborInfo[] neighborArray, int time, HandleFile file) throws IOException{
 		this.selfInfo = selfInfo;
-		//PeerID is the host(server) peer process
 		this.peerId = id;
 		this.logger = logger;
 		this.neighborArray = neighborArray;
@@ -55,8 +54,6 @@ public class Unchoke implements Callable<Integer> {
 		long startTimer = System.currentTimeMillis();
 		
 		while(true){
-			
-			
 			m.receiveMessage(input);
 			if(m.getType() == Message.notInterested){
 				logger.notInterestedLog(selfInfo.getPeerId());
@@ -65,7 +62,6 @@ public class Unchoke implements Callable<Integer> {
 					if((System.currentTimeMillis() - startTimer) >= (time * 1000))
 						break;
 				}
-				//break or do something
 				break;
 			}
 			if(m.getType() == Message.request){
@@ -94,7 +90,6 @@ public class Unchoke implements Callable<Integer> {
 		catch(Exception e){
 			selfInfo.getDoneUpload().set(1);
 			throw new Exception();
-			//return selfInfo.getPeerId();
 		}
 		return selfInfo.getPeerId();
 	}

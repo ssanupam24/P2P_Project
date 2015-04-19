@@ -33,8 +33,6 @@ public class PeerConfigs {
 		String path = System.getProperty("user.home") + "/project/"; 
 		readCommonConfig(path + "Common.cfg");
 		readPeerInfoConfig(path + "PeerInfo.cfg");
-		//printCommonSettings();
-		//printPeerInfo(totalPeers);
 	}
 	
 	public int getPrefNeighbors(){
@@ -317,7 +315,6 @@ public class PeerConfigs {
 	{
 		return havePortList.get(index);
 	}
-	
 	
 	public boolean getHasWholeFile(int index)
 	{

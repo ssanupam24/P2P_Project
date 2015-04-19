@@ -73,14 +73,17 @@ public class peerProcess implements Runnable{
 		}
 		try {
 			setupNeighborAndSelfInfo();
-			//The doomsday thread starts now. Good Luck!!!
+
 			Vector<Future<Object>> downList = new Vector<Future<Object>>();
 			Vector<Future<Object>> haveList = new Vector<Future<Object>>();
+			
 			//Create executor services for download and have.
 			downloadPool = Executors.newFixedThreadPool(totalNeighbors);
 			havePool = Executors.newFixedThreadPool(totalNeighbors);
+			
 			//Create a fixed thread executor service for optunchoke
 			optThread = Executors.newSingleThreadExecutor();
+			
 			if(!fullFile){
 				for(int j = 0; j < neighborInfo.length; j++){
 					
@@ -103,7 +106,7 @@ public class peerProcess implements Runnable{
 				}
 			}
 			Future<Object> optFuture = optThread.submit(new OptUnchoke(peer_id, bitfield, neighborInfo, log, optimisticUnchokeInterval, filePointer, fullFile, noOfPeersToUpload));
-			//Call unchoker function to start unchoker callable
+			//Call unchokerProcess function to start unchoker callable
 			unchokerProcess();
 			//Now check all the future objects and shut down threads if done with 
 			//receiving and sending all the pieces
@@ -127,16 +130,13 @@ public class peerProcess implements Runnable{
 				}
 				havePool.shutdown();
 			}
-			//Hopefully all the tasks are completed successfully and the control reaches here, 
-			//now its celebration time :)
+
 			uploadServerSocket.close();
 			downloadServerSocket.close();
 			haveServerSocket.close();
 			for(int j = 0; j < neighborInfo.length; j++){
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
-				//If you are wondering about the download socket then just so you know
-				//I closed the socket in the download callable
 				neighborInfo[j].getUploadSocket().close();
 			}
 			filePointer.getFile().close();
@@ -148,16 +148,12 @@ public class peerProcess implements Runnable{
 			downloadPool.shutdown();
 			havePool.shutdown();
 			optThread.shutdown();
-			//Hopefully all the tasks are completed successfully and the control reaches here, 
-			//now its celebration time :)
 			uploadServerSocket.close();
 			downloadServerSocket.close();
 			haveServerSocket.close();
 			for(int j = 0; j < neighborInfo.length; j++){
 				// Close all the sockets
 				neighborInfo[j].getHaveSocket().close();
-				//If you are wondering about the download socket then just so you know
-				//I closed the socket in the download callable
 				neighborInfo[j].getUploadSocket().close();
 				}
 			filePointer.getFile().close();
@@ -197,13 +193,11 @@ public class peerProcess implements Runnable{
 			if(fullFile) {
 				if(counter == noOfPeersToUpload){
 					finished = true;
-					//flag = true;
 				}
 			}
 			else{
 				if(counter == (noOfPeersToUpload - 1)) {
 					finished = true;
-					//flag = true;
 				}
 			}
 			if(finished)
@@ -215,9 +209,9 @@ public class peerProcess implements Runnable{
 			prefNeighborList1.clear();
 			prefList.clear();
 			uploadList.clear();
+			
+			//This logic is for those peers that have the full file.
 			if(fullFile) {
-				//this logic is for those peers that have the full file.
-				
 				counter = 0;
 				for(int k = 0; k < neighborInfo.length && counter < peerConfigs.getPrefNeighbors(); k++){
 					if((neighborInfo[k].getBitField().checkPiecesInterested(bitfield)) && 
@@ -245,8 +239,7 @@ public class peerProcess implements Runnable{
 				}
 				if(prefList.size() != 0)
 					log.changeOfPreferredNeighbourLog(prefList);
-				// Wait for the future objects here till the upload threads
-				// complete their execution
+				// Wait for the future objects here till the upload threads complete their execution
 				if(uploadList.size() != 0) {
 					for (Future<Integer> f : uploadList) {
 						f.get();
@@ -294,20 +287,18 @@ public class peerProcess implements Runnable{
 				
 				if(prefList.size() != 0)
 					log.changeOfPreferredNeighbourLog(prefList);
-				// Wait for the future objects here till the upload threads
-				// complete their execution
+				// Wait for the future objects here till the upload threads complete their execution
 				if(uploadList.size() != 0){
 					for (Future<Integer> f : uploadList) {
 						f.get();
 					}
 				}
 			}
-			//Finally the pool is shutdown 
+			//Shut down the pool 
 			uploadPool.shutdownNow();
 			uploadPool = Executors.newFixedThreadPool(peerConfigs.getPrefNeighbors());
 		}
 		catch(Exception e){
-			//This logic is kind of a hack used to shutdown a peer
 			counter1++;
 			if(fullFile) {
 				if(counter1 == noOfPeersToUpload)
@@ -320,7 +311,7 @@ public class peerProcess implements Runnable{
 		}
 	}
 		
-		//Finally the pool is shutdown 
+		//Shut down the pool  
 		uploadPool.shutdownNow();
 	}
 	
@@ -427,7 +418,7 @@ public class peerProcess implements Runnable{
 			BitField bf = new BitField(peerConfigs.getTotalPieces());
 			bf.setBitFromByte(m.getPayload());
 			neighborInfo[index].setBitField(bf);
-			//System.out.println(neighborInfo[index].getBitField().changeBitToString());
+			
 			// Send bitfield in response
 			Message m1 = new Message();
 			m1.setType(Message.bitfield);
@@ -504,7 +495,6 @@ public class peerProcess implements Runnable{
 			BitField bf = new BitField(peerConfigs.getTotalPieces());
 			bf.setBitFromByte(m3.getPayload());
 			otherInfo.setBitField(bf);			
-			//System.out.println(otherInfo.getBitField().changeBitToString());
 		}
 		// Send an interested or notInterested message depending on the
 		// received bitfield contents.

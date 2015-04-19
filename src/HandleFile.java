@@ -20,8 +20,8 @@ public class HandleFile{
 		this.fileConfig = fileConfig;
 		String path = System.getProperty("user.home") + "/project/peer_" + id + "/";
 		File newFolder = new File(path);
+		//Create new directory if not present
 		if(!newFolder.exists()){
-			//Create new directory if not present
 			newFolder.mkdir();
 		}
 		this.filename = new RandomAccessFile(path + fileConfig.getFileName(), "rw");

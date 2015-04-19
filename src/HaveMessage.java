@@ -14,10 +14,8 @@ import java.util.concurrent.Callable;
 
 public class HaveMessage implements Callable<Object> {
 
-	private int peerId;
-	//The selfinfo variable has the neighborinfo record of the client peer that receives a piece through
-	//download thread
-	private NeighborInfo selfInfo;
+	private int peerId; // ID of the peer the callable is created at
+	private NeighborInfo selfInfo;  // The NeighborInfo record of the client peer
 	private LoggerPeer logger;
 	private NeighborInfo[] neighborArray;
 	private Socket sock;
@@ -30,7 +28,6 @@ public class HaveMessage implements Callable<Object> {
 	
 	public HaveMessage(int id, NeighborInfo selfInfo, LoggerPeer logger, NeighborInfo[] neighborArray, BitField bits, boolean fullFile, int noOfPeersToUpload) throws IOException{
 		this.selfInfo = selfInfo;
-		//PeerID is the host(server) peer process
 		this.peerId = id;
 		this.logger = logger;
 		this.neighborArray = neighborArray;

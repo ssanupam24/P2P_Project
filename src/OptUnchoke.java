@@ -15,8 +15,7 @@ import java.util.concurrent.Callable;
  */
 
 public class OptUnchoke implements Callable<Object> {
-	//PeerID is the host(server) peer process
-	private int peerId;
+	private int peerId;  // ID of the peer the callable is created at
 	private NeighborInfo[] neighborArray;
 	private BitField bits;
 	private LoggerPeer logger;
@@ -63,20 +62,17 @@ public class OptUnchoke implements Callable<Object> {
 			if(fullFile) {
 				if(counter == noOfPeersToUpload){
 					finished = true;
-					//flag = true;
 				}
 			}
 			else{
 				if(counter == (noOfPeersToUpload - 1)) {
 					finished = true;
-					//flag = true;
 				}
 			}
 			if(finished)
 				return new Object();
 			
-			//Select a peer randomly for optUnchoke
-			
+			//Select a peer randomly for optUnchoke			
 			while (!flag) {
 				index = randomGenerator.nextInt(neighborArray.length);
 				if((neighborArray[index].getBitField().checkPiecesInterested(bits)) && (neighborArray[index].getNeighborChokedState().get() == 0) && (neighborArray[index].getDoneUpload().get() == 0)){
@@ -91,10 +87,10 @@ public class OptUnchoke implements Callable<Object> {
 			input = sock.getInputStream();
 			output = sock.getOutputStream();
 			Message m = new Message();
+			
 			//Send unchoke message only if choked
 			//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 			if((neighborArray[index].getNeighborChokedState().get() == 2) && (neighborArray[index].getDoneUpload().get() == 0)){
-				
 				m.setType(Message.unchoke);
 				m.setPayload(null);
 				m.sendMessage(output);
@@ -107,7 +103,7 @@ public class OptUnchoke implements Callable<Object> {
 				if(neighborArray[index].getDoneUpload().get() == 1)
 					break;
 				m.receiveMessage(input);		
-				//Add the not interested thing here
+				
 				if(m.getType() == Message.notInterested){
 					logger.notInterestedLog(neighborArray[index].getPeerId());
 					neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);
@@ -115,7 +111,6 @@ public class OptUnchoke implements Callable<Object> {
 						if((System.currentTimeMillis() - startTimer) >= (optInterval * 1000))
 							break;
 					}
-					//break or do something
 					break;
 				}
 				if(m.getType() == Message.request){
@@ -143,7 +138,6 @@ public class OptUnchoke implements Callable<Object> {
 			catch (Exception ex) {
 				neighborArray[index].getDoneUpload().compareAndSet(0, 1);
 			}
-			//Just to play safe.
 			neighborArray[index].getNeighborChokedState().compareAndSet(2, 0);		
 		}
 	}

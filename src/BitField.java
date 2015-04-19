@@ -46,7 +46,6 @@ public class BitField {
 			byteIndex = i / 8;
 			if(bitPieceIndex[i].get() == true)
 				result[byteIndex] = (byte)((1 << bitIndex) | (result[byteIndex]));
-			//Test it with and without
 			else
 				result[byteIndex] = (byte) (~(1 << bitIndex) & result[byteIndex]);
 		}
