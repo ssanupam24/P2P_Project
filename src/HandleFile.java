@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Vector;
 
 /*
  * @author Anupam
@@ -15,6 +16,7 @@ public class HandleFile{
 	
 	private RandomAccessFile filename;
 	private PeerConfigs fileConfig;
+	private Vector<Integer> noOfPiecesWritten;
 	
 	public HandleFile(int id, PeerConfigs fileConfig) throws FileNotFoundException {
 		this.fileConfig = fileConfig;
@@ -25,6 +27,7 @@ public class HandleFile{
 			newFolder.mkdir();
 		}
 		this.filename = new RandomAccessFile(path + fileConfig.getFileName(), "rw");
+		noOfPiecesWritten = new Vector<Integer>();
 	}
 	/*
 	 * This function returns the file pointer to close the file 
@@ -36,17 +39,20 @@ public class HandleFile{
 	 * This function writes a piece in a file
 	 */
 	public synchronized void writeFile(Piece p) throws IOException{
-		int size = fileConfig.getSizeOfPiece();
-		int offset;
-		byte[] temp = p.getPieceContent();
-		int len;
-		offset = size * p.getPieceNum();
-		len = p.getPieceContent().length;
-		getFile().seek(offset);
-		int i = 0;
-		while(i < len){
-			getFile().writeByte(temp[i]);
-			i++;
+		if(!noOfPiecesWritten.contains(p.getPieceNum())){
+			noOfPiecesWritten.add(p.getPieceNum());
+			int size = fileConfig.getSizeOfPiece();
+			int offset;
+			byte[] temp = p.getPieceContent();
+			int len;
+			offset = size * p.getPieceNum();
+			len = p.getPieceContent().length;
+			getFile().seek(offset);
+			int i = 0;
+			while (i < len) {
+				getFile().writeByte(temp[i]);
+				i++;
+			}
 		}
 	}
 	/*

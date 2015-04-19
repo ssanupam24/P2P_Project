@@ -19,10 +19,12 @@ public class LoggerPeer
 	private FileWriter writer;
 	private BufferedWriter buffer;
 	private boolean downloadComplete = false;
+	private Vector<Integer> noOfPiecesWritten;
 	
 	public LoggerPeer(int peerId) throws IOException
 	{
 		this.peerId = peerId;
+		noOfPiecesWritten = new Vector<Integer>();
 		Date date = new Date();
 		this.logTime = new Timestamp(date.getTime());
 		
@@ -148,8 +150,11 @@ public class LoggerPeer
 	
 	public synchronized void downloadingLog(int peer_2, int pieceIndex, int numPieces)
 	{
-		String str = getTime() + ": Peer " + peerId + " has downloaded the piece " + pieceIndex + " from " + peer_2 + "." + "\nNow the number of pieces it has is " + numPieces + ".\n";
-		writeToFile(str);
+		if(!noOfPiecesWritten.contains(numPieces)) {
+			noOfPiecesWritten.add(numPieces);
+			String str = getTime() + ": Peer " + peerId + " has downloaded the piece " + pieceIndex + " from " + peer_2 + "." + "\nNow the number of pieces it has is " + numPieces + ".\n";
+			writeToFile(str);
+		}
 	}
 	
 	public synchronized void completeDownloadLog()
