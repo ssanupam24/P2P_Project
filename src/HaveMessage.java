@@ -56,10 +56,7 @@ public class HaveMessage implements Callable<Object> {
 					counter++;
 				}
 			}
-			/*if(counter == neighborArray.length) {
-				finished = true;
-				break;
-			}*/
+			
 			if(fullFile) {
 				if(counter == noOfPeersToUpload){
 					finished = true;
@@ -70,13 +67,12 @@ public class HaveMessage implements Callable<Object> {
 					finished = true;
 				}
 			}
-			//if yes then break from the loop and return null
+			//if yes then break from the loop and return Object instance
 			if(finished)
 				return new Object();
-			// System.out.println("##Before receiving msg in have.");
+			
 			try{
 			m.receiveMessage(input);
-			// System.out.println("##After receiving msg in have.");
 			if(m.getType() == Message.have){
 				byte[] payload = m.getPayload();
 				pieceIndex = ByteIntConversion.byteArrayToInt(payload);

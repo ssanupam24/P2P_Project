@@ -26,11 +26,15 @@ public class HandleFile{
 		}
 		this.filename = new RandomAccessFile(path + fileConfig.getFileName(), "rw");
 	}
-	//Return the file pointer to close the file
+	/*
+	 * This function returns the file pointer to close the file 
+	 */
 	public synchronized RandomAccessFile getFile(){
 		return filename;
 	} 
-	//Write a piece in a file
+	/*
+	 * This function writes a piece in a file
+	 */
 	public synchronized void writeFile(Piece p) throws IOException{
 		int size = fileConfig.getSizeOfPiece();
 		int offset;
@@ -45,7 +49,9 @@ public class HandleFile{
 			i++;
 		}
 	}
-	//Read a piece from a file for unchoke
+	/*
+	 * This function reads a piece from a file for unchoke
+	 */
 	public synchronized Piece readFile(int id) throws IOException{
 		int length;
 		//Get the total length of the piece
@@ -62,11 +68,12 @@ public class HandleFile{
 			pieceContent[i] = t;
 			i++;
 		}
-		//filename.read(pieceContent); //It will read length bytes from the offset position
 		Piece p = new Piece(pieceContent, id);
 		return p;
 	}
-	//Read a piece from a file for optUnchoke
+	/*
+	 * This function reads a piece from a file for optUnchoke
+	 */
 		public synchronized Piece readFileForOpt(int id) throws IOException{
 			int length;
 			//Get the total length of the piece
@@ -83,7 +90,6 @@ public class HandleFile{
 				pieceContent[i] = t;
 				i++;
 			}
-			//filename.read(pieceContent); //It will read length bytes from the offset position
 			Piece p = new Piece(pieceContent, id);
 			return p;
 		}

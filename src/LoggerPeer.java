@@ -41,7 +41,10 @@ public class LoggerPeer
 		} 
 		
 	} 
-	
+	/*
+	 * This function writes the log messages into the log file
+	 * @param string content of the message
+	 */
 	public synchronized void writeToFile(String content)
 	{
 		try 
@@ -55,7 +58,9 @@ public class LoggerPeer
 		} 
 		
 	}
-	
+	/*
+	 * This function closes all the buffer and file writer objects
+	 */
 	public synchronized void close()
 	{
 		try 
@@ -70,7 +75,9 @@ public class LoggerPeer
 		} 
 		
 	} 
-	
+	/*
+	 * This function returns the current date/time
+	 */
 	public synchronized String getTime()
 	{
 		Date date = new Date();
@@ -155,14 +162,4 @@ public class LoggerPeer
 		}
 	}
 	
-	// TODO: Remove later. Just for debugging purposes
-	public synchronized void requestLog(int peer_2, boolean flag, int pid)
-	{
-		String str;
-		if(flag)
-			str = getTime() + ": Peer " + peerId + " has received a request from " + peer_2 + " for piece " + pid + ".\n";
-		else
-			str = getTime() + ": Peer " + peerId + " has sent a request to " + peer_2 + " for piece " + pid + ".\n";
-		writeToFile(str);
-	}
 	}

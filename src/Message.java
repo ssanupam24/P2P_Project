@@ -19,7 +19,6 @@ public class Message
   public static final byte bitfield = 5;
   public static final byte request = 6;
   public static final byte piece = 7;
-  //public static final byte finish = 8; 
   
   public synchronized int getLength()
   {
@@ -85,19 +84,6 @@ public class Message
 		  byte[] receivedLength = new byte[4];
 		  byte[] receivedType = new byte[1];
 		  int index;
-		  /*index = input.read(receivedLength);
-		  messageLength = ByteIntConversion.byteArrayToInt(receivedLength);
-		  index = input.read(receivedType);
-		  messageType = receivedType[0];
-		  if(messageLength > 1){
-			  messagePayload = new byte[messageLength - 1];
-		  }
-		  else {
-			  messagePayload = null;
-		  }
-		  if(messagePayload != null){
-			  index = input.read(messagePayload);
-		  }*/
 		  int counter = 0;
 		//Receive message length
 		  while(counter < 4){

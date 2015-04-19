@@ -47,7 +47,7 @@ public class Unchoke implements Callable<Integer> {
 		//Send Unchoke to the peer that created this callable and then start uploading
 		//Set the choke state and send unchoke only if the neighbor was choked else don't send unchoke
 		if(selfInfo.getNeighborChokedState().compareAndSet(0, 1)){
-			// System.out.println("Unchoked from unchoked callable");
+			
 			m.setPayload(null);
 			m.setType(Message.unchoke);
 			m.sendMessage(output);
@@ -56,9 +56,6 @@ public class Unchoke implements Callable<Integer> {
 		
 		while(true){
 			
-			//if(selfInfo.getBitField().getFinished())
-				//return selfInfo.getPeerId();
-			//Add the not interested message condition	
 			
 			m.receiveMessage(input);
 			if(m.getType() == Message.notInterested){
@@ -73,7 +70,6 @@ public class Unchoke implements Callable<Integer> {
 			}
 			if(m.getType() == Message.request){
 				pieceIndex = ByteIntConversion.byteArrayToInt(m.getPayload());
-				//logger.requestLog(selfInfo.getPeerId(), true, pieceIndex);
 				Piece p = file.readFile(pieceIndex);
 				byte[] piecelen = ByteIntConversion.intToByteArray(p.getPieceNum());
 				byte[] chunk = new byte[piecelen.length + p.getPieceContent().length];
@@ -90,7 +86,7 @@ public class Unchoke implements Callable<Integer> {
 					m.setPayload(null);
 					m.sendMessage(output);
 				}
-				//System.out.println("Timer expired" + selfInfo.getPeerId());
+				
 				break;
 			}
 		}
@@ -100,8 +96,6 @@ public class Unchoke implements Callable<Integer> {
 			throw new Exception();
 			//return selfInfo.getPeerId();
 		}
-		//To play safe
-		//selfInfo.getNeighborChokedState().compareAndSet(1, 0);
 		return selfInfo.getPeerId();
 	}
 	

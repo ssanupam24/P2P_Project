@@ -53,7 +53,9 @@ public class BitField {
 		return result;
 	}
 	
-	//This function sets the corresponding bit field from the byte array received
+	/*This function sets the corresponding bit field from the byte array received
+	 * @param byte Array received from socket stream
+	 */
 	public synchronized void setBitFromByte(byte[] byteArray){
 		int bitIndex;
 		int byteIndex;
@@ -74,7 +76,9 @@ public class BitField {
 			finished.set(true);
 	}
 	
-	//This function is used to change a bit field to binary string of 0's and 1's just for verification.
+	/*This function is used to change a bit field to binary string of 0's and 1's just for verification.
+	 * @param NULL
+	 */
 	public synchronized String changeBitToString(){
 		String result = "";
 		for(int i = 0; i < totPieces; i++){
@@ -85,18 +89,28 @@ public class BitField {
 		}
 		return result;
 	}
-	
+	/*
+	 * This function returns the finished flag which indicates if a peer has finished downloading or not
+	 */
 	public synchronized boolean getFinished(){
 		return finished.get();
 	}
+	/*
+	 * This function returns the length of the array that keeps track of the pieces downloaded by the peer
+	 */
 	public synchronized int getBitPieceIndexLength(){
 		return bitPieceIndex.length;
 	}
-	
+	/*
+	 * This function returns the number of pieces that the peer has downloaded
+	 */
 	public synchronized int getCountFinishedPieces(){
 		return countFinishedPieces.get();
 	}
-	
+	/*
+	 * This function sets the corresponding piece index to true to indicate that the peer has downloaded
+	 * that piece
+	 */
 	public synchronized void setBitToTrue(int index){
 		if(bitPieceIndex[index].get() == false){
 			bitPieceIndex[index].set(true);
@@ -105,7 +119,9 @@ public class BitField {
 				finished.set(true);
 		}
 	}
-	
+	/*
+	 * This function sets the corresponding value of the piece index to false
+	 */
 	public synchronized void setBitToFalse(int index){
 		if(bitPieceIndex[index].get() == true){
 			bitPieceIndex[index].set(false);
@@ -113,7 +129,9 @@ public class BitField {
 			finished.set(false);
 		}
 	}
-	
+	/*
+	 * This function sets all the fields to true to indicate that the peer has the entire file
+	 */
 	public synchronized void setAllBitsTrue(){
 		for(int i =0; i < totPieces; i++){
 			bitPieceIndex[i].set(true);
@@ -122,7 +140,9 @@ public class BitField {
 		finished.set(true);
 	}
  
-	//Check if the piece is not present then return interested
+	/*This function checks if the piece is present or not
+	 * 
+	 */
 	public synchronized boolean checkPiecesInterested(BitField bf){
 		for(int i = 0; i < totPieces; i++){
 			if((bitPieceIndex[i].get() == false) && (bf.bitPieceIndex[i].get() == true)) 
@@ -130,7 +150,10 @@ public class BitField {
 		}
 		return false;
 	}
-	//Check if the interested piece is downloaded then set the flag to true in bitfield array
+	/*This function checks if the interested piece has been downloaded then set the flag to true in bitfield array
+	 * The pieces are randomly selected by the peer
+	 * @param the bitfield of the peer against which we need to check the interesting piece
+	 */
 	public synchronized int setInterestedPiece(BitField bf){
 		
 		randomPieces.clear();
@@ -150,15 +173,6 @@ public class BitField {
 				finished.set(true);
 			return randomPieces.get(counter);
 		}
-		/*for(int i = 0; i < totPieces; i++){
-			if((bitPieceIndex[i] == false) && (bf.bitPieceIndex[i] == true)){
-				bitPieceIndex[i] = true;
-				countFinishedPieces++;
-				if(countFinishedPieces == totPieces)
-					finished = true;
-				return i;
-			}
-		}*/
 		return -1;
 	}
 	

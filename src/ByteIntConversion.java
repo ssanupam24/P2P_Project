@@ -3,7 +3,9 @@
  * Found the logic on Stack Overflow 
  */
 public class ByteIntConversion {
-	//Converts byte array to int
+	/*
+	 *This function converts byte array to int 
+	 */
 	public synchronized static int byteArrayToInt(byte[] b) 
 	{
 	    int value = 0;
@@ -13,7 +15,9 @@ public class ByteIntConversion {
 	    }
 	    return value;
 	}
-	//Converts int to byte array
+	/*
+	 *This function converts int to byte array 
+	 */
 	public synchronized static byte[] intToByteArray(int a)
 	{
 	    byte[] ret = new byte[4];
@@ -23,10 +27,5 @@ public class ByteIntConversion {
 	    ret[0] = (byte) ((a >> 24) & 0xFF);
 	    return ret;
 	}
-	//for testing
-	/*public static void main(String[] args){
-		int a = 23;
-		System.out.println(byteArrayToInt(intToByteArray(a)));
-	}*/
 
 }

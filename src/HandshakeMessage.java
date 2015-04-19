@@ -29,7 +29,10 @@ public class HandshakeMessage {
 	public int getPeerID(){
 		return peerID;
 	}
-	
+	 /*
+	  * This function is used to send the handshake message through the socket
+	  * @param Socket of the peer to which the handshake message is sent
+	  */
 	 public void sendMessage(Socket socket){
 		 try{
 			OutputStream os = socket.getOutputStream();
@@ -41,7 +44,10 @@ public class HandshakeMessage {
 			e.printStackTrace();
 		}
 	 }
-	 
+	 /*
+	  * This function is used to receive handshake message from the peer through the socket
+	  * @param Socket of the peer from which the handshake message is received
+	  */
 	 public void receiveMessage(Socket socket){
 		 try{
 			 InputStream is = socket.getInputStream();

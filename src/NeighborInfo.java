@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * @author Anupam and Gloria
- * This class saves all the required information of all the peers
+ * This class saves all the required information of each of the peers
  */
 public class NeighborInfo {
 	private int peer_id;

@@ -33,8 +33,8 @@ public class PeerConfigs {
 		String path = System.getProperty("user.home") + "/project/"; 
 		readCommonConfig(path + "Common.cfg");
 		readPeerInfoConfig(path + "PeerInfo.cfg");
-		printCommonSettings();
-		printPeerInfo(totalPeers);
+		//printCommonSettings();
+		//printPeerInfo(totalPeers);
 	}
 	
 	public int getPrefNeighbors(){
@@ -86,7 +86,10 @@ public class PeerConfigs {
 	public ArrayList<Boolean> getHasWholeFile(){
 		return hasWholeFile;
 	}
-		
+	/*
+	 * This function reads the Common.cfg file and populates the corresponding variables
+	 * @param The path of the Common.cfg file	
+	 */
 	public void readCommonConfig(String commonConfigPath) throws Exception
 	{
 		try{
@@ -163,7 +166,10 @@ public class PeerConfigs {
 			exception.printStackTrace();
 		}
 	}
-	
+	/*
+	 * This function reads the PeerInfo.cfg file and populates the corresponding variables
+	 * @param The path of the PeerInfo.cfg file
+	 */
 	public void readPeerInfoConfig(String peerConfigPath) throws Exception
 	{
 		try{
@@ -225,7 +231,6 @@ public class PeerConfigs {
          	   }	 
         	   else if(modResult == 3) // token is the port number found in the current line of the file
         	   {
-        		   int port;
         		   
         		   if(scanner.hasNextInt())
         		   {
@@ -318,10 +323,5 @@ public class PeerConfigs {
 	{
 		return hasWholeFile.get(index);
 	}
-	
-	
-	public static void main(String [] args) throws Exception
-	{	
-		PeerConfigs config = new PeerConfigs();
-	}
+
 }

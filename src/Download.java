@@ -35,7 +35,6 @@ public class Download implements Callable<Object> {
 		//Remove the check for all the neighbors and add the check for yourself if you are done with downloading
 		while(true){
 			try{
-				//TODO: Don't need to check the neighbor's download, check yours and quit from the callable
 				if(bits.getFinished()) {
 					logger.completeDownloadLog();
 					selfInfo.getDownloadSocket().close();
@@ -105,7 +104,6 @@ public class Download implements Callable<Object> {
 			catch(Exception e){
 				selfInfo.getDownloadSocket().close();
 				return new Object();
-				//throw new Exception();
 			}
 		}
 	}
