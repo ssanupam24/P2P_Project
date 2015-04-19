@@ -381,9 +381,9 @@ public class peerProcess implements Runnable{
 		Socket downloadSocket = downloadServerSocket.accept();
 		Socket uploadSocket = uploadServerSocket.accept();
 		Socket haveSocket = haveServerSocket.accept();
-		downloadSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
-		uploadSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
-		haveSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
+		downloadSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*2000);
+		uploadSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*2000);
+		haveSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*2000);
 		// Put the sockets in the neighborInfo object
 		neighborInfo[index].setUploadSocket(uploadSocket);
 		neighborInfo[index].setDownloadSocket(downloadSocket);
@@ -459,9 +459,9 @@ public class peerProcess implements Runnable{
 		Socket uploadClientSocket = new Socket(host, downloadPort);
 		Socket downloadClientSocket = new Socket(host, uploadPort);
 		Socket haveClientSocket = new Socket(host, havePort);
-		uploadClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
-		downloadClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
-		haveClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*4000);
+		uploadClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*2000);
+		downloadClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*2000);
+		haveClientSocket.setSoTimeout((peerConfigs.getTimeOptUnchoke() > peerConfigs.getTimeUnchoke() ? peerConfigs.getTimeOptUnchoke() : peerConfigs.getTimeUnchoke())*2000);
 		// put client sockets in the neighborInfo array
 		otherInfo.setDownloadSocket(downloadClientSocket);
 		otherInfo.setUploadSocket(uploadClientSocket);
