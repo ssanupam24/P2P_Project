@@ -63,6 +63,7 @@ public class peerProcess implements Runnable{
 	 */
 	public void run()
 	{
+		System.out.println("peerProcess Started");
 		//Finished flag setup after checking the whole file value from bitfield
 		for(int i = 0; i < peerConfigs.getTotalPeers(); i++){
 			if((peerConfigs.getHasWholeFile(i)) && (peerConfigs.getPeerList(i) == peer_id)){
@@ -140,6 +141,7 @@ public class peerProcess implements Runnable{
 				neighborInfo[j].getUploadSocket().close();
 			}
 			filePointer.getFile().close();
+			log.close();
 			System.exit(0);
 		} 
 		catch (Exception e) {
@@ -157,6 +159,7 @@ public class peerProcess implements Runnable{
 				neighborInfo[j].getUploadSocket().close();
 				}
 			filePointer.getFile().close();
+			log.close();
 			System.exit(0);
 			}
 			catch(Exception e1){
@@ -388,7 +391,6 @@ public class peerProcess implements Runnable{
 		neighborInfo[index].setUploadSocket(uploadSocket);
 		neighborInfo[index].setDownloadSocket(downloadSocket);
 		neighborInfo[index].setHaveSocket(haveSocket);
-		System.out.println("Accepted connections");
 		
 		InputStream input = downloadSocket.getInputStream();
 		OutputStream output = downloadSocket.getOutputStream();

@@ -58,7 +58,7 @@ public class HandshakeMessage {
              is.read(zerobits);
              is.read(newID);
              peerID = ByteIntConversion.byteArrayToInt(newID);
-             System.out.println(header + " " + peerID);
+             System.out.println("Connected with " + peerID);
 		 }
 		  catch (Exception e) {
 				e.printStackTrace();
