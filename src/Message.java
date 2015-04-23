@@ -70,7 +70,6 @@ public class Message
 	  output.flush();
 	  }
 	  catch(Exception e){
-		  Thread.sleep(100);
 		  throw new Exception();
 	  }
 	  
@@ -113,7 +112,6 @@ public class Message
 		  }
 	  }
 	  catch(Exception e){
-		  Thread.sleep(100);
 		  throw new Exception();
 	  }
 	  
